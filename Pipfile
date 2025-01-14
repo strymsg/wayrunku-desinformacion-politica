@@ -1,0 +1,23 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+asyncio = "*"
+beautifulsoup4 = "*"
+playsound = "*"
+playwright = "==1.46.0"
+requests = "*"
+soupsieve = "*"
+urllib3 = "*"
+websockets = "*"
+yt-dlp = "*"
+pandas = "*"
+asyncclick = "*"
+pygobject = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.10"
