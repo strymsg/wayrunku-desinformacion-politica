@@ -88,15 +88,17 @@ class TikTokProfileScraper:
         print(type(self.page))
         profile_info['following_count'] = await self.page.locator(
             get_locator(locators['profiles']['followingCount'])
-        )[0].inner_text().strip()
-        followers_count = await self.page.locator(
+        ).first().inner_text().strip()
+        profile_info['followers_count'] = await self.page.locator(
             get_locator(locators['profiles']['followersCount'])
-        )[0].inner_text().strip()
-        likes_count = await self.page.locator(
+        ).first().inner_text().strip()
+        profile_info['likes_count'] = await self.page.locator(
             get_locator(locators['profiles']['likesCount'])
-        )[0].inner_text().strip()
+        ).first().inner_text().strip()
 
-        return { following_count, followers_count, likes_count }
+        print("GET profile counts info...")
+        print(profile_info)
+        return profile_info
         # TODO: terimar
       # let following_count = getElementsByXPath(locators['profile-following-count']['value'])[0].textContent.trim();
       # let followers_count = getElementsByXPath(locators['profile-followers-count']['value'])[0].textContent.trim();
@@ -145,6 +147,7 @@ class TikTokProfileScraper:
             videos.append({'url': video_url, 'views': views})
             
         print(f'Found {len(videos)} unique videos so far.')
+        print(videos)
 
         return videos
 
@@ -157,30 +160,36 @@ class TikTokProfileScraper:
         await handle_captcha(self.page)
 
         video_info = {}
+        # likes = self.page.locator(
+        #     get_locator(locators['videos']['likeCount'])
+        # )
+        # print(likes)
+        # print(await likes.inner_text())
+        # video_info['likes'] = await likes.inner_text().strip()
         video_info['likes'] = await self.page.locator(
             get_locator(locators['videos']['likeCount'])
-        ).first().inner_text().strip()
+        ).inner_text()
         video_info['commentCount'] = await self.page.locator(
             get_locator(locators['videos']['commentCount'])
-        ).first().inner_text().strip()
+        ).inner_text()
         video_info['shareCount'] = await self.page.locator(
             get_locator(locators['videos']['shareCount'])
-        ).first().inner_text().strip()
+        ).inner_text()
         video_info['savedCount'] = await self.page.locator(
             get_locator(locators['videos']['savedCount'])
-        ).first().inner_text().strip()
+        ).inner_text()
         video_info['description'] = await self.page.locator(
             get_locator(locators['videos']['description'])
-        ).first().inner_text().strip()
+        ).inner_text()
         video_info['date'] = await self.page.locator(
             get_locator(locators['videos']['date'])
-        ).first().inner_text().strip()
+        ).inner_text()
         video_info['tags'] = []
         tags = await self.page.locator(get_locator(locators['videos']['tags'])).all()
         for tag_element in tags:
-            tag = await tag_element.inner_text().strip()
+            tag = await tag_element.inner_text()
             video_info['tags'].append(tag)
-
+        print(video_info)
         return video_info
 
 

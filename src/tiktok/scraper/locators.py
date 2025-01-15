@@ -34,11 +34,13 @@ locators = {
         },
         'likeCount': {
             'stype': 'css',
-            'value': '[data-e2e="browse-like-count"]'
+            #'value': '[data-e2e="browse-like-count"]' # pantallas grandes
+            'value': 'strong[data-e2e="like-count"]'
         },
         'commentCount': {
             'stype': 'css',
-            'value': 'strong[data-e2e="browse-comment-count"]'
+            #'value': 'strong[data-e2e="browse-comment-count"]' # pantallas grandes
+            'value': 'strong[data-e2e="comment-count"]'
         },
         'savedCount': {
             'stype': 'css',
@@ -49,8 +51,10 @@ locators = {
             'value': '[data-e2e="share-count"]'
         },
         'description': {
-            'stype': 'xpath',
-            'value': '//span[@data-e2e="new-desc-span"]'
+            #'stype': 'xpath',
+            #'value': '//span[@data-e2e="new-desc-span"]'
+            'stype': 'css',
+            'value': 'div.css-bs495z-DivWrapper.e1mzilcj0'
         },
         'date': {
             'stype': 'css',

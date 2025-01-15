@@ -12,6 +12,7 @@ async def scroll_page(page):
     Params:
     page (playwrigth page)
     """
+    print("   scrolling page")
     await page.evaluate("""
         window.scrollBy(0, window.innerHeight);
     """)
