@@ -44,6 +44,26 @@ async def scrape_profiles(from_file, profiles, only_metadata):
 
     tiktok_profile_scraper = TikTokProfileScraper()
 
+    #### TEST #########
+    # profile_test = {
+    #     'videos': [
+    #         {
+    #             'url': 'https://www.tiktok.com/@moniquita1622/video/7446164565185875206', 'views': '6859',
+    #             'likes': '13.8K',
+    #             'commentCount': '306',
+    #             'shareCount': '2125',
+    #             'savedCount': '636',
+    #             'description': '#agendapascualina #agendapascualina2025 #recuerdosadolescentes #nostalgia #pascualina',
+    #             'date': '2024-12-8',
+    #             'tags': ['#agendapascualina', '#agendapascualina2025', '#recuerdosadolescentes', '#nostalgia', '#pascualina']
+    #         }, {'url': 'https://www.tiktok.com/@moniquita1622/video/7446147925593541893', 'views': '274.5K',
+    #             'likes': '30', 'commentCount': '3', 'shareCount': 'Share', 'savedCount': '2', 'description': '#snow #bursaprovince', 'date': '2024-12-8', 'tags': ['#snow', '#bursaprovince']
+    #             },
+    #     ]
+    # }
+    # tc = tiktok_profile_scraper.get_profile_total_counts(profile_test)
+    # print(tc)
+    ###################
 
     async with async_playwright() as p:
 
@@ -54,6 +74,8 @@ async def scrape_profiles(from_file, profiles, only_metadata):
             print(f"============ {profile} ==============")
             print("=====================================")
             profile_data = await tiktok_profile_scraper.scrape_profile_basics(profile)
+
+
             # TODO: likes, video_plays, hashtags, hyperlinks, lives, short_videos.
             print("Basics:")
             print(profile_data)

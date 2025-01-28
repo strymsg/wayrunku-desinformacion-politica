@@ -242,31 +242,28 @@ class TikTokProfileScraper:
 
         Returns (Dict)
         """
-        counts = {}
+        print("((((((((((((((((")
+        print(profile_data)
+        print(')_)))))))))))))))))))')
+        counts = {
+            'hashtags': 0,
+            'likes_in_posts_got': 0,
+            'saves_got': 0,
+            'comments_got': 0
+        }
         for i, video in enumerate(profile_data['videos']):
-            if len(video['tags']) > 0:
-                counts['hashtags'] = sum([
-                    int(get_number_tiktok(len(video['tags'])))
-                ])
-            else:
-                counts['hashtags'] = 0
+            print(video)
+            counts['hashtags'] += len(video.get('tags', []))
+            # TODO
+            # counts['hashtags_hyperlinks'] =
             # TODO:
             # counts['hyperlinks'] =
             # TODO:
             #counts['short_videos'] = len()
-            counts['likes_in_posts_got'] = sum([
-                int(get_number_tiktok(likes)) for likes in video['likes']
-            ])
+            counts['likes_in_posts_got'] += int(get_number_tiktok(video['likes']))
             # TODO: mentions
-            counts['saves_got'] = sum([
-                int(get_number_tiktok(likes)) for likes in video['savedCount']
-            ])
-            counts['comments_got'] = sum([
-                int(get_number_tiktok(likes)) for likes in video['commentCount']
-            ])
-            # counts['shares_got'] = sum([
-            #     int(get_number_tiktok(likes) for likes in video['commentCount'])
-            # ])
+            counts['saves_got'] = (int(get_number_tiktok(video['savedCount'])))
+            counts['comments_got'] = int(get_number_tiktok(video['commentCount']))
         return counts
 
 
