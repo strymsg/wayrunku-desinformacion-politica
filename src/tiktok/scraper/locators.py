@@ -147,4 +147,10 @@ locators = {
             'value': '//div[@class="css-1idgi02-DivViewRepliesContainer e7fhvc05"]/span[contains(text(),"Hide")]/../../div/span[contains(text(), "more")]'
         },
     },
+    'common': {
+        'loginContainer': {
+            'stype': 'xpath',
+            'value': '//*[@id="loginContainer"]'
+        }
+    }
 }

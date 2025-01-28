@@ -28,6 +28,12 @@ class EntityTracker():
             'tiktok_group'
         ]
 
+        valid_platforms = [
+            'facebook',
+            'tiktok'
+            'x'
+        ]
+
         if entity_type not in valid_entities:
             raise Exception(f'{entity_type} not an allowed entity.')
 

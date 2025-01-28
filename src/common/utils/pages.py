@@ -4,6 +4,10 @@ Copyright Rodrigo Garcia 2025
 """
 
 from src.common.utils.time import random_sleep
+from src.common.utils.custom_logger import CustomLogger
+
+
+LOGGER = CustomLogger("utils")
 
 
 async def scroll_page(page):
@@ -12,7 +16,7 @@ async def scroll_page(page):
     Params:
     page (playwrigth page)
     """
-    print("   scrolling page")
+    LOGGER.debug(" scrolling page")
     await page.evaluate("""
         window.scrollBy(0, window.innerHeight);
     """)

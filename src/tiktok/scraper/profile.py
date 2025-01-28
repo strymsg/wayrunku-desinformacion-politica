@@ -3,6 +3,7 @@ This is part of wayrunku-desinformacion-politica
 Copyright Rodrigo Garcia 2025
 """
 
+import traceback
 import src.common.entity_tracker as EntityTracker
 
 from src.tiktok.scraper.locators import locators
@@ -10,8 +11,12 @@ from src.common.utils.pages import scroll_page
 from src.tiktok.scraper.utils import handle_captcha
 from src.common.utils.selectors import get_locator, get_selector_value
 from src.common.utils.time import random_sleep
+from src.common.utils.parsers import get_number_tiktok
+from src.common.utils.custom_logger import CustomLogger
 
 from typing import List, Dict
+
+LOGGER = CustomLogger('Tiktok profile ⛏:')
 
 
 class TikTokProfileScraper:
@@ -53,31 +58,28 @@ class TikTokProfileScraper:
         url = f"https://www.tiktok.com/@{username}"
         await self.page.goto(url, wait_until="networkidle")
         await handle_captcha(self.page)
-
-    
-    async def save_data_to_csv(self):
-        pass
-
-
-    async def save_data_to_db(self):
-        pass
     
 
     async def get_profile_basics(self, username):
         """Performs scraping to get basic data of the given profile.
         This basic data is followers, following, likes and video counts
         """
-        profile_data = { 'username': username }
+        profile_data = {
+            'username': username,
+            'url': f"https://www.tiktok.com/@{username}"
+        }
 
         # get profile general stats
         try:
-            profile_data['profileInfo'] = await self.get_profile_counts_info()
+            basics = await self.get_profile_counts_info()
+            profile_data = { **profile_data, **basics }
             # TODO: Add logger
-            print(profileData['profileInfo'])
+            LOGGER.info(f'Profile Info Obtained: {profile_data}')
         except Exception as E:
-            profile_data['error'] = str(E)
-            print(f'Error while getting profile stats: {E}')
+            profile_data['error'] = str(E) + '\n' + traceback.format_exc()
+            LOGGER.error(f'Error while getting profile stats: {E}')
         return profile_data
+
 
     async def get_profile_counts_info(self) -> Dict:
         """Gets the profile general info from the current page instance
@@ -88,22 +90,15 @@ class TikTokProfileScraper:
         print(type(self.page))
         profile_info['following_count'] = await self.page.locator(
             get_locator(locators['profiles']['followingCount'])
-        ).first().inner_text().strip()
+        ).inner_text()
         profile_info['followers_count'] = await self.page.locator(
             get_locator(locators['profiles']['followersCount'])
-        ).first().inner_text().strip()
+        ).inner_text()
         profile_info['likes_count'] = await self.page.locator(
             get_locator(locators['profiles']['likesCount'])
-        ).first().inner_text().strip()
+        ).inner_text()
 
-        print("GET profile counts info...")
-        print(profile_info)
         return profile_info
-        # TODO: terimar
-      # let following_count = getElementsByXPath(locators['profile-following-count']['value'])[0].textContent.trim();
-      # let followers_count = getElementsByXPath(locators['profile-followers-count']['value'])[0].textContent.trim();
-      # let likes_count = getElementsByXPath(locators['profile-likes-count']['value'])[0].textContent.trim();
-        #return { following_count, followers_count, likes_count };        
         
      
     async def get_profile_video_elements(self) -> List[Dict]:
@@ -148,7 +143,6 @@ class TikTokProfileScraper:
             
         print(f'Found {len(videos)} unique videos so far.')
         print(videos)
-
         return videos
 
 
@@ -189,7 +183,7 @@ class TikTokProfileScraper:
         for tag_element in tags:
             tag = await tag_element.inner_text()
             video_info['tags'].append(tag)
-        print(video_info)
+        
         return video_info
 
 
@@ -197,11 +191,91 @@ class TikTokProfileScraper:
         pass
 
 
-    async def scrape_profile(self, username, get_comments_text = False) -> Dict:
-        """Gets a profile data doing web scraping
+    async def scrape_profile_basics(self, username: str) -> Dict:
+        """Gets basic data information doing web scraping. Data includes:
+        Basic profile stats, video counts
 
         Parameters:
-        p (async_playwright): Async Playwright Instance
+        username (str): user name
+        """
+        await self.load_profile_page(username)
+
+        #1. Get general stats
+        profile_data = await self.get_profile_basics(username)
+        
+        #2. Get videos and views data (check date to avoid duplication)
+        profile_data['videos'] = await self.get_video_count_and_videos()
+        return profile_data
+
+
+    async def scrape_videos(self, profile_data: Dict, get_comments_text) -> Dict:
+        """Iterates through all videos of the given profile and gets its
+        data doing web scraping
+
+        Parameters:
+        profile_data (Dict): Profile data, can be obtained with self.scrape_profile_basics
+        get_comments_text (bool): If true, it will scrape all comments in videos and obtain its contents
+        """
+        #3. Enter videos and get info (check date to avoid duplication)
+        #  -  If get comments text is enabled scroll to comments and get info (check date!)
+        for i, video in enumerate(profile_data['videos']):
+            LOGGER.debug(f'Scraping video ({i}/{len(profile_data["videos"])}): {profile_data["videos"][i]["url"]}')
+            try:
+                profile_data['videos'][i] = await self.extract_video_info(video['url'])
+                LOGGER.debug(f'Obtained: {profile_data["videos"][i]}')
+            except Exception as E:
+                LOGGER.error(f'Error getting video info: {E}')
+
+            if get_comments_text:
+                # TODO:
+                print("Getting comments text")
+
+        #4. Return videos info
+        return profile_data
+
+    def get_profile_total_counts(self, profile_data) -> Dict:
+        """Given a profile data, it parses all numeric data of videos
+        to get total counts.
+
+        Parameters:
+        profile_data (Dict): Profile data
+
+        Returns (Dict)
+        """
+        counts = {}
+        for i, video in enumerate(profile_data['videos']):
+            if len(video['tags']) > 0:
+                counts['hashtags'] = sum([
+                    int(get_number_tiktok(len(video['tags'])))
+                ])
+            else:
+                counts['hashtags'] = 0
+            # TODO:
+            # counts['hyperlinks'] =
+            # TODO:
+            #counts['short_videos'] = len()
+            counts['likes_in_posts_got'] = sum([
+                int(get_number_tiktok(likes)) for likes in video['likes']
+            ])
+            # TODO: mentions
+            counts['saves_got'] = sum([
+                int(get_number_tiktok(likes)) for likes in video['savedCount']
+            ])
+            counts['comments_got'] = sum([
+                int(get_number_tiktok(likes)) for likes in video['commentCount']
+            ])
+            # counts['shares_got'] = sum([
+            #     int(get_number_tiktok(likes) for likes in video['commentCount'])
+            # ])
+        return counts
+
+
+    async def scrape_entire_profile(self, username, get_comments_text = False) -> Dict:
+        """Gets full data of a profile doing web scraping
+
+        Parameters:
+        username (str): user name
+        get_comments_text (bool): If true, it will scrape all comments in videos and obtain its contents
         """
         await self.load_profile_page(username)
 
