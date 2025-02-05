@@ -20,6 +20,7 @@ class HashtagsPosts(DbBase):
     id = Column(Integer, primary_key=True)
     id_hashtag = Column(Integer, ForeignKey('hashtags.id'), nullable=False)
     id_posts = Column(Integer, ForeignKey('posts.id'), nullable=False)
+    extraction_status = Column(String, default='unfinished')
     
     snapshot_date = Column(Date, default=today_yyyymmdd())
 

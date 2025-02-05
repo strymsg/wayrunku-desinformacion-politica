@@ -8,7 +8,7 @@ from sqlalchemy import Column, Integer, String, Date, ForeignKey, UniqueConstrai
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import insert, select, update, func
 from sqlalchemy import text
-from src.db.db_manager import DbManager, DbBase
+from src.db.db_manager import DbBase
 from src.db.models.base_model_memebers import BaseModelMembers
 from src.common.utils.time import today_yyyymmdd
 
@@ -49,7 +49,8 @@ class Profiles(DbBase, BaseModelMembers):
     react_wow_got = Column(Integer)
     react_angry_got = Column(Integer)
     hashtags = Column(Integer)
-    hyperlinks = Column(Integer)        
+    hyperlinks = Column(Integer)
+    extraction_status = Column(String, default='incomplete')
 
     # dt.now().strftime('%Y-%m-%d') --> '2025-01-15'
     #TODO: constructor, Insert

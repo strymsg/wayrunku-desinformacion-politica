@@ -22,6 +22,7 @@ CREATE TABLE profiles(
        platform TEXT,
        url TEXT,
        likes_got INT,
+       likes_in_posts_got INT,
        posts INT,
        comments INT,
        mentions INT,
@@ -38,14 +39,16 @@ CREATE TABLE profiles(
        react_wow_got INT,
        react_angry_got INT,
        react_like_got INT,
-       hashtags INT,
+       hashtags TEXT,
        hyperlinks INT,
+       extraction_status TEXT,
 
        FOREIGN KEY(id_m_profile) REFERENCES m_profile(id)
 );
 CREATE TABLE posts(
        id SERIAL PRIMARY KEY,
        id_profile INT NOT NULL,
+       id_source_post INT NULL,
 
        snapshot_date DATE,
        creation_date DATE,
@@ -54,7 +57,9 @@ CREATE TABLE posts(
        platform TEXT,
        is_shared INT,
        shares INT,
+       views INT,
        likes_got INT,
+       comments_got INT,
        post_type TEXT,
        saves_got INT,
        react_love_got INT,
@@ -65,8 +70,10 @@ CREATE TABLE posts(
        react_like_got INT,
        hashtags INT,
        hyperlinks INT,
+       extraction_status TEXT,
 
-       FOREIGN KEY (id_profile)  REFERENCES profiles(id)
+       FOREIGN KEY (id_profile)  REFERENCES profiles(id),
+       FOREIGN KEY (id_source_post) REFERENCES posts(id)
 );
 
 CREATE TABLE hashtags (

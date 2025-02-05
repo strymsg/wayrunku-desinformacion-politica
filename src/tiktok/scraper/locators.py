@@ -37,6 +37,10 @@ locators = {
             #'value': '[data-e2e="browse-like-count"]' # pantallas grandes
             'value': 'strong[data-e2e="like-count"]'
         },
+        'pinnedBadge': {
+            'stype': 'xpath',
+            'value': '//div[@data-e2e="video-card-badge"]'
+        },
         'commentCount': {
             'stype': 'css',
             #'value': 'strong[data-e2e="browse-comment-count"]' # pantallas grandes

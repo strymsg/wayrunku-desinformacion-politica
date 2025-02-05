@@ -33,7 +33,7 @@ class ProfilesDatahandler():
         #self.mProfile_dh = mProfileDatahandler()
 
 
-    def insert(self, profile_data: dict) -> Dict:
+    def insert(self, profile_data: Dict) -> Dict:
         """Inserts a profile snapshot record and returns the result created. Automatically
         does the relationship between this and monitored profile.
         """
@@ -59,7 +59,7 @@ class ProfilesDatahandler():
             'name': to_add['name'],
             'id_m_profile': to_add['id_m_profile']
         })
-        print(f" profile added: {profile}")
+        LOGGER.debug(f"profile added: {profile}")
         return profile
 
 
@@ -73,7 +73,7 @@ class ProfilesDatahandler():
         profile = self.get_one_by(id=profile_data['id'])
         if profile is None:
             LOGGER.warn(f'No profile found with id: {profile_data["id"]}')
-            return {}
+            return None
 
         try:
             self.sHandler.update({
@@ -102,7 +102,7 @@ class ProfilesDatahandler():
         LOGGER.debug(f'Upsert for today {profile_data["name"]} {today_yyyymmdd()}')
         profile = self.get_one_by(name=profile_data['name'])
         if profile is None:
-            LOGGER.warn(f'No profile found with id: {profile_data["name"]}')
+            LOGGER.warn(f'No profile found with name: {profile_data["name"]}')
             return self.insert(profile_data)
         
         profile = self.get_one_by(

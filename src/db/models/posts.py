@@ -10,12 +10,13 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy import insert, select, update, func
 from sqlalchemy import text
-from src.common.db_manager import db_engine, DbBase
+from src.db.db_manager import DbBase
+from src.db.models.base_model_memebers import BaseModelMembers
 from src.common.utils.time import today_yyyymmdd
 
 
 @dataclass
-class Posts(DbBase):
+class Posts(DbBase, BaseModelMembers):
     """Class to manage Posts with the DB"""
     __tablename__ = 'posts'
     
@@ -25,10 +26,14 @@ class Posts(DbBase):
 
     snapshot_date = Column(Date, default=today_yyyymmdd())
     creation_date = Column(Date)
+    url = Column(String)
     content = Column(String)
     platform = Column(Integer)
     is_shared = Column(Integer, default=0)
     shares = Column(Integer)
+    views = Column(Integer)
+    likes_got = Column(Integer)
+    comments_got = Column(Integer)
     post_type = Column(String, default='post')
     
     react_like_got = Column(Integer)
@@ -39,3 +44,4 @@ class Posts(DbBase):
     react_angry_got = Column(Integer)
     hashtags = Column(Integer)
     hyperlinks = Column(Integer)
+    extraction_status = Column(String, default='incomplete')

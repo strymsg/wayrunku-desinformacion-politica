@@ -66,7 +66,8 @@ class DbManager:
         ),
             pool_size=200,
             max_overflow=0,
-            echo=True
+            #echo=True
+            echo=False
         )
 
 

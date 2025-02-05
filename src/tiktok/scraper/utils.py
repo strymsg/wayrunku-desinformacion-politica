@@ -21,9 +21,9 @@ async def handle_captcha(page):
 
         if is_captcha_present and not is_login_container_present:
             LOGGER.info("CAPTCHA detected. Please solve it manually.")
-            playsound('/home/rodrigo.garcia/Misc/Misc/internetBo/desinformación_política/p_obtencion_datos/wayrunku-desinformacion-politica/src/common/resources/fx-cartoon-94472.mp3', block=False)
+            playsound('/home/rodrigo.garcia/Misc/Misc/internetBo/desinformación_política/p_obtencion_datos/wayrunku-desinformacion-politica/src/common/resources/MarioBrosPiano.mp3', block=False)
             # Wait for the CAPTCHA to be solved
-            await page.wait_for_selector('div[role="dialog"]', state='detached', timeout=470000)  # 7 minutes timeout
+            await page.wait_for_selector('div[role="dialog"]', state='detached', timeout=472000)  # 7 minutes timeout
             LOGGER.info("CAPTCHA solved. Resuming script...")
             await asyncio.sleep(0.5)  # Short delay after CAPTCHA is solved
     except Exception as e:

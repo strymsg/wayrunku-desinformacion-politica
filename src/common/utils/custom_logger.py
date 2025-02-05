@@ -6,7 +6,8 @@ Copyright Rodrigo Garcia 2023
 import logging
 import os
 import pathlib
-
+import sys
+import traceback
 
 class CustomLogger(logging.Logger):
     """Class to manage a custom logger
@@ -76,3 +77,18 @@ class CustomLogger(logging.Logger):
         file_handler.setFormatter(formatter)
         self.handlers = self.handlers + [console_handler, file_handler]
 
+
+    def format_exception(self, e):
+        """Logs traceback of exception.
+        Based on: https://stackoverflow.com/questions/6086976/how-to-get-a-complete-exception-stack-trace-in-python
+        """
+        exception_list = traceback.format_stack()
+        exception_list = exception_list[:-2]
+        exception_list.extend(traceback.format_tb(sys.exc_info()[2]))
+        exception_list.extend(traceback.format_exception_only(sys.exc_info()[0], sys.exc_info()[1]))
+
+        exception_str = "Traceback (most recent call last):\n"
+        exception_str += "".join(exception_list)
+        # Removing the last \n
+        exception_str = exception_str[:-1]
+        return exception_str
