@@ -1,0 +1,13 @@
+SQLAlchemy==2.0.19
+asyncio = "*"
+beautifulsoup4 = "*"
+playsound = "*"
+playwright = "==1.46.0"
+requests = "*"
+soupsieve = "*"
+urllib3 = "*"
+websockets = "*"
+yt-dlp = "*"
+pandas = "*"
+asyncclick = "*"
+pygobject = "*"

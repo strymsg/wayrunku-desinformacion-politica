@@ -37,26 +37,8 @@ class DbManager:
         return DbManager.__instance
 
     def create_engine(self):
-        #DATABASE_URL = "postgresql://postgres:postgres@localhost/socialmedia1"
         LOGGER.info("Create Engine")
-        #credentials = DB.get_credentials()
-
-        # return sqlalchemy.create_engine('{engine}://{user}:{password}@{host}:{port}/{database}'.format(
-        #     engine='postgres+psycopg2',
-        #     user=credentials['username'],
-        #     password=credentials['password'],
-        #     host=credentials['host'],
-        #     port=int(credentials['port']),
-        #     database=credentials['database']
-        # ),
-        #     pool_size=200,
-        #     max_overflow=0,
-        #     echo=bool(os.getenv('POSTGRESQL_DEBUG', False))
-        # )
-        #return create_engine(DATABASE_URL, pool_size=200, echo=False)
-
         return create_engine('{engine}://{user}:{password}@{host}:{port}/{database}'.format(
-            #engine='postgres+psycopg2',
             engine='postgresql+psycopg2',
             user='postgres',
             password='postgres',
