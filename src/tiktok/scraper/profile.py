@@ -240,10 +240,20 @@ class TikTokProfileScraper:
         description_el_count = await self.page.locator(
             get_locator(locators['videos']['description'])
         ).count()
+        video_info['description'] = ''
         if description_el_count > 0:
-            video_info['description'] = await self.page.locator(
-                get_locator(locators['videos']['description'])
-            ).inner_text()
+            if description_el_count == 1:
+                video_info['description'] = await self.page.locator(
+                    get_locator(locators['videos']['description'])
+                ).inner_text()
+            else:
+                elements = await self.page.locator(
+                    get_locator(locators['videos']['description'])
+                ).all()
+                text_desc = []
+                for element in elements:
+                    text_desc.append(await element.inner_text())
+                    video_info['description'] = ','.join(text_desc)
         else:
             video_info['description'] = await self.page.locator(
                 get_locator(locators['videos']['description-compactview'])
