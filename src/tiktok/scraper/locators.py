@@ -17,6 +17,7 @@ locators = {
         'likesCount': {
             'stype': 'xpath',
             'value': '//strong[@title="Likes"][@data-e2e="likes-count"]'
+            # 'value': '//strong[@data-e2e="browse-like-count"]'
         },
         'videoElement': {
             'stype': 'css',
@@ -34,8 +35,8 @@ locators = {
         },
         'likeCount': {
             'stype': 'css',
-            #'value': '[data-e2e="browse-like-count"]' # pantallas grandes
-            'value': 'strong[data-e2e="like-count"]'
+            'value': '[data-e2e="browse-like-count"]' # pantallas grandes
+            #'value': 'strong[data-e2e="like-count"]'
         },
         'pinnedBadge': {
             'stype': 'xpath',
@@ -43,8 +44,8 @@ locators = {
         },
         'commentCount': {
             'stype': 'css',
-            #'value': 'strong[data-e2e="browse-comment-count"]' # pantallas grandes
-            'value': 'strong[data-e2e="comment-count"]'
+            'value': 'strong[data-e2e="browse-comment-count"]' # pantallas grandes
+            #'value': 'strong[data-e2e="comment-count"]'
         },
         'savedCount': {
             'stype': 'css',
@@ -55,14 +56,24 @@ locators = {
             'value': '[data-e2e="share-count"]'
         },
         'description': {
-            #'stype': 'xpath',
-            #'value': '//span[@data-e2e="new-desc-span"]'
+            'stype': 'xpath',
+            'value': '//span[@data-e2e="new-desc-span"]'
+        },
+        'description-compactview': {
             'stype': 'css',
             'value': 'div.css-bs495z-DivWrapper.e1mzilcj0'
         },
         'date': {
             'stype': 'css',
             'value': 'span[data-e2e="browser-nickname"] span:last-child'
+        },
+        'date-compactview': {
+            'stype': 'xpath',
+            'value': '//h3[@data-e2e="video-author-uniqueid"]/../../a'
+        },
+        'viewMoreBtn': {
+            'stype': 'xpath',
+            'value': '//button[contains(@class,"css-1eyn8ez-ButtonExpand-StyledButtonBottom")][text()="more"]'
         }
     },
     'comments': {
@@ -155,6 +166,10 @@ locators = {
         'loginContainer': {
             'stype': 'xpath',
             'value': '//*[@id="loginContainer"]'
+        },
+        "skipModalBtn": {
+            'stype': 'xpath',
+            'value': '//div[@class="TUXButton-label"][text()="Skip"]'
         }
     }
 }

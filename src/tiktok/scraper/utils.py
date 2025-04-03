@@ -12,9 +12,12 @@ from src.common.utils.custom_logger import CustomLogger
 LOGGER = CustomLogger('tiktok utils 🔨:')
 
 async def handle_captcha(page):
+    # return True
     try:
         # Check for the presence of the CAPTCHA dialog
         captcha_dialog = page.locator('div[role="dialog"]')
+        print("....")
+        print(captcha_dialog.count(), captcha_dialog.is_visible())
         is_captcha_present = await captcha_dialog.count() > 0 and await captcha_dialog.is_visible()
         # check for the presence of login container
         is_login_container_present = await check_if_login_container(page)
@@ -36,7 +39,14 @@ async def check_if_login_container(page):
         is_login_container_present = await login_container.count() > 0 and await login_container.is_visible()
         if is_login_container_present:
             LOGGER.info('LOGIN CONTAINER detected, trying to close.')
-            await login_container.click()
+
+            skip_btn = page.locator(get_locator(locators['common']['skipModalBtn']))
+            is_skip_btn = await skip_btn.count() > 0 and await skip_btn.is_visible()
+            if is_skip_btn:
+                LOGGER.info('Clicking Skip button')
+                await skip_btn.click()
+            else:
+                await login_container.click()
             return True
     except Exception as e:
         LOGGER.debug(f'Error trying to close login container: {str(e)}')

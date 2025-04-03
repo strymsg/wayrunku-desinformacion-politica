@@ -50,6 +50,9 @@ async def scrape_profiles(from_file, profiles, only_metadata):
         with open(from_file, 'r', encoding='UTF-8', newline='') as csv_file:
             reader = csv.DictReader(csv_file)
             for row in reader:
+                # en caso de que exista la marca de no monitorizar ignorar ester perfil
+                if row.get('Monitorizando', None) is not None and row['Monitorizando'] == 'No':
+                    continue
                 _profile = row['Perfil'].replace('https://www.tiktok.com/', '').replace('@', '')
                 profiles_to_scrape.append(_profile)
                 LOGGER.debug(f'Added profile {_profile}')
@@ -89,18 +92,19 @@ async def scrape_profiles(from_file, profiles, only_metadata):
         # TODO: Parametrize max_videos
         await tiktok_profile_scraper.init(p)
         
-        for profile in profiles_to_scrape:
-            LOGGER.debug(f"Checking {profile} to scrape.")
+        for num_profile, profile in enumerate(profiles_to_scrape):
+            LOGGER.info('\n==================================================================\n')
+            LOGGER.info(f"Checking {profile}. ({num_profile}/{len(profiles_to_scrape)})\n\n")
             found_profile = profiles_dh.get_one_by(
                 name=profile,
                 snapshot_date=today_yyyymmdd(),
                 extraction_status='completed'
             )
             if found_profile is not None:
-                LOGGER.debug(f'  Profile "{profile}" was already processed today, skipping.')
+                LOGGER.info(f'  Profile "{profile}" was already processed today, skipping.')
                 continue
             
-            LOGGER.debug(f"====== Starting to scrape '{profile}' ==============")
+            LOGGER.info(f"====== Starting to scrape '{profile}' ==============")
             LOGGER.debug(f"======== Complete scraping = {only_metadata == False}========")
 
 
@@ -133,7 +137,8 @@ async def scrape_profiles(from_file, profiles, only_metadata):
 
                 # TODO: Only scrape posts within the time from today set.
             
-                profile_data = await tiktok_profile_scraper.scrape_videos(profile_data, False)
+                #profile_data = await tiktok_profile_scraper.scrape_videos(profile_data, False)
+                profile_data = await tiktok_profile_scraper.scrape_videos_by_clicking(profile_data, False)
                 profile_data['id'] = profile_registered['id']
                 profile_data['id_m_profile'] = profile_registered['id_m_profile']
                 profile_data['extraction_status'] = profile_registered['extraction_status']

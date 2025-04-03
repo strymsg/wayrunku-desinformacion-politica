@@ -31,8 +31,10 @@ class TikTokProfileScraper:
             self,
             max_videos=999999,
             max_days_age=99999,
-            width=1280,
-            height=800,
+            # width=1280,
+            # height=800,
+            width=1420,
+            height=980,
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
     ):
         self.width = width
@@ -166,7 +168,10 @@ class TikTokProfileScraper:
                 views = await self.hover_and_get_views(element)
                 pinned = True if i <= len(pinned_video_elements) else False
 
-                videos.append({'url': video_url, 'views': views, 'pinned': pinned})
+                videos.append({
+                    'url': video_url, 'views': views, 'pinned': pinned,
+                    'element': element,
+                })
                 if len(videos) >= self.max_videos:
                     break
             LOGGER.debug(f'Found {len(videos)}  unique videos so far.')
@@ -189,14 +194,28 @@ class TikTokProfileScraper:
         return videos[:self.max_videos-1]
 
 
-    async def extract_video_info(self, url, get_comments_text = False) -> List[Dict]:
+    async def extract_video_info(self, url = None, get_comments_text = False) -> List[Dict]:
         """From video elements given returns data and if required all comments of the video
+
+        Parameters:
+        url (string): If given it goes to that url to load the video, if not it expects that
+        the video page is already loaded.
+        get_comments_text (boolean): Not implemented yet.
         """
         # TODO: add a parameter max_video_age to avoid scraping old videos
 
-        await self.page.goto(url, wait_until='networkidle')
-        await random_sleep(1.33, 4.25)
-        await handle_captcha(self.page)
+        if url is not None:
+            await self.page.goto(url, wait_until='networkidle')
+            await random_sleep(1.33, 4.25)
+            await handle_captcha(self.page)
+
+        view_more_btn_counts = await self.page.locator(
+            get_locator(locators['videos']['viewMoreBtn'])
+        ).count()
+        if view_more_btn_counts > 0:
+            await self.page.locator(
+                get_locator(locators['videos']['viewMoreBtn'])
+            ).click()
 
         video_info = {}
         # likes = self.page.locator(
@@ -211,18 +230,35 @@ class TikTokProfileScraper:
         video_info['commentCount'] = await self.page.locator(
             get_locator(locators['videos']['commentCount'])
         ).inner_text()
-        video_info['shareCount'] = await self.page.locator(
-            get_locator(locators['videos']['shareCount'])
-        ).inner_text()
+        # video_info['shareCount'] = await self.page.locator(
+        #     get_locator(locators['videos']['shareCount'])
+        # ).inner_text()
         video_info['savedCount'] = await self.page.locator(
             get_locator(locators['videos']['savedCount'])
         ).inner_text()
-        video_info['description'] = await self.page.locator(
+
+        description_el_count = await self.page.locator(
             get_locator(locators['videos']['description'])
-        ).inner_text()
-        video_info['date'] = await self.page.locator(
-            get_locator(locators['videos']['date'])
-        ).inner_text()
+        ).count()
+        if description_el_count > 0:
+            video_info['description'] = await self.page.locator(
+                get_locator(locators['videos']['description'])
+            ).inner_text()
+        else:
+            video_info['description'] = await self.page.locator(
+                get_locator(locators['videos']['description-compactview'])
+            ).inner_text()            
+
+        date_el_count = await self.page.locator(get_locator(locators['videos']['date'])).count()
+        if date_el_count > 0:
+            video_info['date'] = await self.page.locator(
+                get_locator(locators['videos']['date'])
+            ).inner_text()
+        else:
+            video_info['date'] = await self.page.locator(
+                get_locator(locators['videos']['date-compactview'])
+            ).inner_text()            
+
         video_info['tags'] = []
         tags = await self.page.locator(get_locator(locators['videos']['tags'])).all()
         for tag_element in tags:
@@ -255,7 +291,7 @@ class TikTokProfileScraper:
         profile_data['videos'] = await self.get_video_count_and_videos()
         return profile_data
 
-
+    
     async def scrape_videos(self, profile_data: Dict, get_comments_text) -> Dict:
         """Iterates through all videos of the given profile and gets its
         data doing web scraping. Also checks if videos are newer than max_days_age param
@@ -282,6 +318,7 @@ class TikTokProfileScraper:
             LOGGER.debug(f'Scraping video ({i}/{len(profile_data["videos"])}): {profile_data["videos"][i]["url"]}  pinned: {profile_data["videos"][i]["pinned"]}')
             try:
                 scraped_info = await self.extract_video_info(video['url'])
+                
                 video_age = age_in_days(
                     datetime_from_yyyymmdd(
                         tiktok_date_parser(scraped_info['date'])
@@ -313,6 +350,67 @@ class TikTokProfileScraper:
         #4. Return videos info
         return profile_data
 
+
+    async def scrape_videos_by_clicking(self, profile_data: Dict, get_comments_text) -> Dict:
+        """Iterates through all videos of the given profile and gets its
+        data doing web scraping returning to the profile page and clicking to every video.
+
+        Also checks if videos are newer than max_days_age param and does this by checking
+        every extracted video data, if it finds one video older
+        than `self.max_days_age', stops checking the rmaining videos, this asumes videos
+        are sorted by date (this is default tiktok behavior).
+
+        Parameters:
+        profile_data (Dict): Profile data, can be obtained with self.scrape_profile_basics
+        get_comments_text (bool): If true, it will scrape all comments in videos and obtain its contents
+
+        Returns: Profile Data with video data in 'videos'. Automatically deletes older videos
+        than `self.max_days_age'
+        """
+        last_video_index = 0
+        done = False
+        for i, video in enumerate(profile_data['videos']):
+            LOGGER.debug(f'Scraping video ({i}/{len(profile_data["videos"])}): {profile_data["videos"][i]["url"]}  pinned: {profile_data["videos"][i]["pinned"]}')
+
+            video_elements = await self.get_profile_video_elements()
+            # clicking on the desired video
+            LOGGER.debug('entering to the video...')
+            await video_elements[i].click()
+            await random_sleep(2.8, 5.3)
+            try:
+                scraped_info = await self.extract_video_info()
+                video_age = age_in_days(
+                    datetime_from_yyyymmdd(
+                        tiktok_date_parser(scraped_info['date'])
+                    ))
+                LOGGER.debug(f'video age {video_age}')
+                if video_age > self.max_days_age and video['pinned'] is False:
+                    LOGGER.debug(f'Video date {scraped_info["date"]} is too old (max age: {self.max_days_age}). Skipping remaining videos.')
+                    profile_data['videos'] = profile_data['videos'][:last_video_index]
+                    done = True
+                else:
+                    profile_data['videos'][i] = {
+                        **profile_data['videos'][i],
+                        **scraped_info
+                    }
+                    LOGGER.debug(f'Obtained: {profile_data["videos"][i]}')
+                    last_video_index = i
+                    
+            except Exception as e:
+                LOGGER.error(f'Error getting video info: {e}')
+                LOGGER.error(LOGGER.format_exception(e))
+            
+            if get_comments_text:
+                # TODO:
+                print("Getting comments text")
+
+            if done:
+                break
+
+            await self.load_profile_page(profile_data['username'])
+            
+        return profile_data
+            
 
     def get_profile_total_counts(self, profile_data) -> Dict:
         """Given a profile data, it parses all numeric data of videos
@@ -363,7 +461,9 @@ class TikTokProfileScraper:
         #3. Enter videos and get info (check date to avoid duplication)
         #  -  If get comments text is enabled scroll to comments and get info (check date!)
         for i, video in enumerate(profile_data['videos']):
-            profile_data['videos'][i] = await self.extract_video_info(video['url'])
+            print('CLICKING...')
+            #profile_data['videos'][i] = await self.extract_video_info(video['url'])
+            profile_data['videos'][i] = await self.scrape_videos_by_clicking()
             print("Video info obtained...")
             print(profile_data['videos'][i])
 
