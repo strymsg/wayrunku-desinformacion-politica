@@ -47,8 +47,9 @@ class TikTokProfileScraper:
 
     async def init(self, p):
         browser = await p.chromium.launch(headless=False)
-        
+
         context = await browser.new_context(
+            locale='en-US',
             viewport={'width': self.width, 'height': self.height},
             user_agent=self.user_agent,
         )
@@ -386,7 +387,7 @@ class TikTokProfileScraper:
             # clicking on the desired video
             LOGGER.debug('entering to the video...')
             await video_elements[i].click()
-            await random_sleep(2.8, 5.3)
+            await random_sleep(2.1, 5.2)
             try:
                 scraped_info = await self.extract_video_info()
                 video_age = age_in_days(
