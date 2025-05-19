@@ -38,7 +38,7 @@ locators = {
         },
         'creation-date': {
             'stype': 'xpath',
-            'value': "//span[@class='xi81zsa x1nxh6w3 x1sibtaa']"
+            'value': "//span[@class='xi81zsa x1nxh6w3 x1sibtaa'][text()='Fecha de creación']/../../../..//span[@dir='auto']"
         }
     },
     'posts': {
@@ -94,6 +94,15 @@ locators = {
         'share-count-rel-to-comment': { # relative to comment count
             'stype': 'xpath',
             'value': "./../../..//span[contains(@class, 'xkrqix3 x1sur9pj')][contains(text(), 'compartido')]"
+        },
+        'share-btn-rel-to-comment': { # relative to comment count
+            'stype': 'xpath',
+            'value': './../../../../../..//span[@data-ad-rendering-role="share_button"]'
+        },
+        'copy-url': {
+            # This works by first clicking `share-btn-rel-to-comment'
+            'stype': 'xpath',
+            'value': '//div[@class="x9f619 x1n2onr6 x1ja2u2z x78zum5 xdt5ytf x1iyjqo2 x2lwn1j"]//span[text()="Copiar enlace"]'
         },
         'react-like-count': {
             # me gusta
@@ -155,6 +164,8 @@ locators = {
             'stype': 'xpath',
             'value': "//div[@class='__fb-dark-mode']//div[@role='tooltip']/span"
         },
+        
+
         'post-content': {
             # tomar en cuenta #«r1c1» (funciona para el post 1
 

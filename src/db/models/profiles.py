@@ -47,6 +47,7 @@ class Profiles(DbBase, BaseModelMembers):
     react_haha_got = Column(Integer)
     react_sad_got = Column(Integer)
     react_wow_got = Column(Integer)
+    react_icare_got = Column(Integer)
     react_angry_got = Column(Integer)
     hashtags = Column(Integer)
     hyperlinks = Column(Integer)

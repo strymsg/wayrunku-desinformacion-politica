@@ -3,6 +3,7 @@ This is part of wayrunku-desinformacion-politica
 Copyright Rodrigo Garcia 2025
 """
 
+import random
 import traceback
 import src.common.entity_tracker as EntityTracker
 
@@ -85,34 +86,33 @@ class FacebookProfileScraper:
         await random_sleep(0.43254, 2)
         text = await get_text_from_page_and_locator(
             self.page, locators['figure-profiles']['following-count'])
-        profile_data['following_count'] = int(get_number_facebook(text))
+        profile_data['following_count'] = int(get_number_facebook(text)) if text != '' else 0
         text = await get_text_from_page_and_locator(
             self.page, locators['figure-profiles']['followers-count'])
-        profile_data['followers_count'] = int(get_number_facebook(text))
+        profile_data['followers_count'] = int(get_number_facebook(text)) if text != '' else 0
 
         # creation date
         await self.page.locator(
             get_locator(locators['profiles']['about-tab-by-name'], "Información")
         ).click()
         await random_sleep(0.53, 1.2)
+        if await is_element_located(
+                self.page, locators['figure-profiles']['profile-transparency-btn']) is False:
+            return profile_data
+
         await self.page.locator(
-            get_locator(locators['figure-profiles']['profile-transparency-btn'])
-        ).click()      
-        profile_data['creation_date'] = get_text_from_page_and_locator(
-            self.page, locators['figure-profiles']['creation-date']
+            get_locator(locators['figure-profiles']['profile-transparency-btn']),
+        ).click()
+        text  = await get_text_from_page_and_locator(
+            self.page, locators['figure-profiles']['creation-date'], throw_exception=False
         )
+        profile_data['creation_date'] = facebook_date_text_parser(text) if text != '' else ''
         await self.page.locator(
             get_locator(locators['profiles']['about-tab-by-name'], 'Publicaciones')
         ).click()
         await random_sleep(0.54, 1.5)
 
         return profile_data
-
-        post_locators = self.page.locator(get_locator(locators['posts']['container-main']))
-        post_locator = post_locators.nth(post_number)
-        aria_described_by = await post_locator.get_attribute('aria-describedby')
-        aria_labelledby = await post_locator.get_attribute('aria-labelledby')
-        return get_unique_locators_for_post_attrs(aria_described_by, aria_labelledby)
         
 
     def check_post_identifier(self, post_identifier):
@@ -194,21 +194,14 @@ class FacebookProfileScraper:
         LOGGER.debug(f'Trying to get POST number {number}')
 
         await scroll_page(self.page)
-        await random_sleep(2.52, 4.81)
+        await random_sleep(2.11, 4.31)
 
-        #post_locator_xpath = await self.get_next_post_locator()
         post_locator = await self.get_next_post_locator()
-        #print(post_locator_xpath)
-        #post_locator = self.page.locator(f'xpath={post_locator_xpath}')
-        # post_locators = self.page.locator(get_locator(locators['posts']['container-main']))
-        # post_locator = post_locators.nth(number)
-        print('******')
-        print(post_locator)
 
         aria_described_by = await post_locator.get_attribute('aria-describedby')
         aria_labelledby = await post_locator.get_attribute('aria-labelledby')
         locators_for_post = get_unique_locators_for_post_attrs(aria_described_by, aria_labelledby)
-        #print(locators_for_post)
+
         # For Date it is better to hover on date text, then wait to a tooltip to appear
         LOGGER.debug('Getting: post-date')
         locator_built = get_locator(locators_for_post['date']['xpath'])
@@ -216,7 +209,7 @@ class FacebookProfileScraper:
         
         await self.page.locator(locator_built).wait_for()
         await self.page.locator(locator_built).hover()
-        await random_sleep(0.87, 1.64)
+        await random_sleep(2.07, 2.64)
         
         date_text_raw = await get_text_from_page_and_locator(
             self.page, locators['posts']['posted-date-text'])
@@ -227,20 +220,34 @@ class FacebookProfileScraper:
         post_age_in_days = age_in_days(datetime_from_yyyymmdd(post_data['creation_date']))
         LOGGER.debug(f'Post age {post_age_in_days}')
         if post_age_in_days > max_age_in_days:
-            date_text_raw
             LOGGER.warning(f'This post is too old {post_age_in_days} (max {max_age_in_days}). Skipping.')
             return {}
 
-        # post content
+        # url
+        LOGGER.debug('Getting: url')
+        post_data['url'] = ''
+        try:
+            comment_count_locator = self.page.locator(get_locator(locators_for_post['comment_count']['xpath']))
+            print(comment_count_locator)
+            await comment_count_locator.locator(
+                get_locator(locators['posts']['share-btn-rel-to-comment'])).click()
+            await random_sleep(0.82, 1.83)
+            # after this click the modal closes
+            await self.page.locator(get_locator(locators['posts']['copy-url'])).click()
+            post_data['url'] = await self.page.evaluate_handle("navigator.clipboard.readText()").text
+            print(f'URL: {post_data["url"]}, {str(post_data["url"])}')
+        except Exception as e:
+            LOGGER.warning('Could not retrieve URL for the post. (generating a random)')
+            LOGGER.warning(LOGGER.format_exception(e))
+            post_data['url'] = f'not-found-post-url-{random.randint(-550000, 550000)}'
+        
+
+        #locator_built += locators['posts']['share-btn-rel-to-comment']
+        
         LOGGER.debug('Getting: content')
         post_data['content'] = await get_text_from_page_and_locator(
             self.page, locators_for_post['content_text']['xpath'], throw_exception=False)
         
-        # TODO: See if content_media could be stored and to what end?
-        LOGGER.debug('Getting: media content')
-        post_data['media_content'] = await get_text_from_page_and_locator(
-            self.page, locators_for_post['content_media']['css'], throw_exception=False)
-
         LOGGER.debug('Getting: reactions')
         if await is_element_located(self.page,
                 locators_for_post['react_btn']['xpath']) is False:
@@ -311,6 +318,13 @@ class FacebookProfileScraper:
                 comment_locator, locators['posts']['share-count-rel-to-comment'])
             post_data['shares'] = get_number_facebook(text)
 
+        # TODO: See if content_media could be stored and to what end?
+        LOGGER.debug('Getting: media content')
+        post_data['media_content'] = ''
+        # TODO: Fails when the locator fails
+        # post_data['media_content'] = await get_text_from_page_and_locator(
+        #     self.page, locators_for_post['media_content']['xpath'], throw_exception=False)
+
         return post_data
 
 
@@ -323,20 +337,15 @@ class FacebookProfileScraper:
         username (str): Username or name of the profile
         get_comments_text (boolean): To implement
         """
-        profile_data = {
-            'url': url,
-            'name': username
-        }
+        posts = []
         
         #await self.load_profile_page(url, username)
         #await random_sleep(3, 7)
         #profile_data = await self.get_profile_basics(url, username)
 
-        posts = []
         post_number = 0
         fail_count = 0
         finished_posts = False
-        print(self.max_posts, self.max_fails, self.max_days_age)
         while finished_posts is False and post_number < self.max_posts \
               and fail_count < self.max_fails:
             try:
@@ -355,9 +364,7 @@ class FacebookProfileScraper:
                 LOGGER.error(f'Error getting post {post_number}\n {E}\n')
                 LOGGER.error(f'Post errors: {fail_count}')
 
-        profile_data['posts'] = posts
+        LOGGER.debug(f'Obtained data from profile. Total of {len(posts)}.\n')
+        LOGGER.debug(posts)
 
-        LOGGER.debug('Obtained data from profile')
-        LOGGER.debug(profile_data)
-
-        return profile_data
+        return posts

@@ -103,6 +103,7 @@ async def get_text_from_page_and_locator(p, locator: str, throw_exception=True,
         return txt if txt is not None else ''
     except Exception as e:
         LOGGER.warning(f'Could not get element with locator: {locator}')
+        # LOGGER.warning(LOGGER.format_exception(e))
         if throw_exception is False:
             return ''
         raise e

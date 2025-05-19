@@ -6,17 +6,33 @@ import asyncclick as click
 import csv
 import os
 
+from sqlalchemy.orm import sessionmaker
+from src.db.db_manager import DbManager
 from src.common.utils.custom_logger import CustomLogger
 from src.facebook.scraper.profile import FacebookProfileScraper
+from src.facebook.data_handlers.profiles import ProfilesDatahandler
+from src.facebook.data_handlers.posts import PostsDataHandler
 from playwright.async_api import async_playwright
-from src.common.utils.time import random_sleep, today_yyyymmdd, age_in_days, datetime_from_yyyymmdd
+from src.common.utils.time import random_sleep, today_yyyymmdd, age_in_days, \
+    datetime_from_yyyymmdd
 
 
 LOGGER = CustomLogger('fb_profiles 🏃')
 
+# TODO: parametrize these vars
+MAX_POST_AGE = 7
+MAX_POSTS = 30
+
+# ========== DB Connection and session ==========
+db = DbManager.create()
+engine = db.engine
+Session = sessionmaker(bind=engine)
+session = Session()
+# ==============================================
+
 
 @click.command()
-@click.option("--from_folder", "-f", default="",
+@click.option("--from_folder", "-f", default="data/facebook",
               help="Folder where to find csv files to get profiles. Expects columns 'Nombre' and 'Facebook' in each file.")
 @click.option("--profiles", "-p", default="",
               help="List of profiles to scrape, spearated by comas. E.g: https://www.facebook.com/alejandracamargo1989,https://www.facebook.com/MarielaBaldiviesoDiputadaNacional")
@@ -61,6 +77,7 @@ async def scrape_profiles(from_folder, profiles, login):
                 viewport={'width': 1284, 'height': 722},
                 #user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
                 user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+                permissions=["clipboard-read", "clipboard-write"]
             )
             page = await context.new_page()
             await page.goto(url, wait_until="networkidle")
@@ -75,36 +92,96 @@ async def scrape_profiles(from_folder, profiles, login):
         LOGGER.info("Using previous session avoiding to login.")
     
 
-    facebook_profile_scraper = FacebookProfileScraper(max_days_age=7, max_posts=30, max_fails=10)
+    facebook_profile_scraper = FacebookProfileScraper(max_days_age=MAX_POST_AGE,
+                                                      max_posts=MAX_POSTS, max_fails=10)
     
-
+    profiles_dh = ProfilesDatahandler(session)
+    posts_dh = PostsDataHandler(session)
+    
+    
     async with async_playwright() as p:
         await facebook_profile_scraper.init(p)
+
+        #### test insert
+
+        # to_insert = {
+        #     'name': 'Andrea Barrientos', 'url': 'https://www.facebook.com/AndreaBarrientosCC', 'following_count': 82, 'followers_count': 20000, 'creation_date': '2019-07-15',
+        #     'id': '929', 'id_m_profile': '59', 'extraction_status': 'incomplete',
+        #     'posts': [{'id_profile': '929', 'snapshot_date': '2025-05-16', 'creation_date': '2025-05-15', 'url': 'not-found-post-url-182271', 'content': 'José Luis Lupo se suma al binomio de la Unidad. Con amplia trayectoria en organismos internacionales, formación en economía y experiencia en resolución de crisis, nos a… Ver más', 'media_content': 'MMM', 'platform': 'facebook', 'likes_got': 40, 'comments_got': 25, 'shares': 4, 'react_like_got': 40, 'react_love_got': 6, 'react_haha_got': 32, 'react_sad_got': 0, 'react_wow_got': 0, 'react_angry_got': 1, 'react_icare_got': 0, 'extraction_status': 'completed'}]}
+        # posts_registered = posts_dh.register_all_posts_from_profile(
+        #     to_insert, MAX_POST_AGE
+        # )
+        # print(posts_registered)
+
+        # import sys
+        # sys.exit()
+
+        ######
 
         for num_profile, profile in enumerate(profiles_to_scrape):
             LOGGER.info('\n ======================================== \n')
             LOGGER.info(f'Checking {profile["name"]}. ({num_profile}/{len(profiles_to_scrape)})\n\n')
-            # TODO: search in BD
+            # searching in BD
+            found_profile = profiles_dh.get_one_by(
+                name=profile['name'],
+                snapshot_date=today_yyyymmdd(),
+                extraction_status='completed'
+            )
+            if found_profile is not None:
+                LOGGER.info(f'  Profile "{profile}" was already processed today, skipping.')
+                continue
+            
 
             LOGGER.info(f"====== Starting to scrape '{profile['name']}' ==============")
 
             try:
                 await facebook_profile_scraper.load_profile_page(profile['url'])
-                await random_sleep(4, 8)
-            
-                # TODO: get profile basics
-                profile_basics = await facebook_profile_scraper.get_profile_basics(
-                    profile['url'], profile['name'])
+                await random_sleep(2, 4)
 
-                print(profile_basics)
-                # TODO: check if profile needs to be inserted or updated for today
+                profile_data = await facebook_profile_scraper.get_profile_basics(
+                    profile['url'], profile['name'])
+                # print(profile_basics)
+                print(profile_data)
+
+                profile_registered = profiles_dh.upsert_for_today({
+                    'name': profile_data['name'],
+                    'country_origin': 'unknown',
+                    'creation_date': profile_data['creation_date'],
+                    'followers': int(profile_data['followers_count']),
+                    'following': int(profile_data['following_count']),
+                    'platform': 'facebook',
+                    'url': profile_data['url'],
+                    # TODO
+                    #'hashtags': profile_data[''],
+                    #'hiperlinks': profile_data[''],
+                    #'short_videos': profile_data[''],
+                    #'comments': profile_data[''],
+                    #'mentions':
+                    #'comments_got'
+                    #'lives'
+                })
                 
-                # TODO: get posts
                 posts = await facebook_profile_scraper.scrape_entire_profile(
                     profile['url'], profile['name']
                 )
-                print(posts)
-                # TODO: process data to insert/update in BD
+                profile_data['posts'] = posts
+
+                profile_data['id'] = profile_registered['id']
+                profile_data['id_m_profile'] = profile_registered['id_m_profile']
+                profile_data['extraction_status'] = profile_registered['extraction_status']
+                profile_data['name'] = profile_registered['name']
+                #print(posts)
+
+                # registering posts to DB
+                posts_registered = posts_dh.register_all_posts_from_profile(
+                    profile_data, MAX_POST_AGE
+                )
+                profile_registered = profiles_dh.upsert_for_today({
+                    'name': profile_data['name'],
+                    'extraction_status': 'completed',
+                })
+                
+                session.close()
                 
             except Exception as e:
                 LOGGER.error(f'Skipping scraping of profile {profile}.')

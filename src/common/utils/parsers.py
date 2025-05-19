@@ -107,14 +107,20 @@ def facebook_date_text_parser(date_str) -> str:
     """
     print(f'date_str: {date_str}')
 
-    date_part = date_str.split(" a las ")[0].split(", ")[1]
-    # Split into day, Spanish month, and year
-    day, month_es, year = date_part.split(" de ")
+    day = ''
+    month_es = ''
+    year = ''
+    if date_str.find(',') != -1:
+        date_part = date_str.split(" a las ")[0].split(", ")[1]
+        # Split into day, Spanish month, and year
+        day, month_es, year = date_part.split(" de ")
+    else:
+        day, month_es, year = date_str.split(" de ")
 
     # Dictionary to map Spanish months to English
     spanish_months = {
         'enero': 'January',
-        'febrero': 'February',
+        'Febrero': 'February',
         'marzo': 'March',
         'abril': 'April',
         'mayo': 'May',
