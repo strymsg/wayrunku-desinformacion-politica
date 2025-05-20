@@ -85,10 +85,10 @@ class FacebookProfileScraper:
         # get profile general stats
         await random_sleep(0.43254, 2)
         text = await get_text_from_page_and_locator(
-            self.page, locators['figure-profiles']['following-count'])
+            self.page, locators['figure-profiles']['following-count'], throw_exception=False)
         profile_data['following_count'] = int(get_number_facebook(text)) if text != '' else 0
         text = await get_text_from_page_and_locator(
-            self.page, locators['figure-profiles']['followers-count'])
+            self.page, locators['figure-profiles']['followers-count'], throw_exception=False)
         profile_data['followers_count'] = int(get_number_facebook(text)) if text != '' else 0
 
         # creation date
@@ -212,7 +212,7 @@ class FacebookProfileScraper:
         await random_sleep(2.07, 2.64)
         
         date_text_raw = await get_text_from_page_and_locator(
-            self.page, locators['posts']['posted-date-text'])
+            self.page, locators['posts']['posted-date-text'], throw_exception=False)
         post_data['creation_date'] = facebook_date_text_parser(date_text_raw)
 
         # Check if date is no older than max_age
