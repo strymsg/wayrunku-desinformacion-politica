@@ -159,7 +159,7 @@ class PostsDataHandler():
                 # TODO: register hashtags
                 # 'hashtags': ','.join(post['tags']),
                 'likes_got': int(post['react_like_got']) if post['react_like_got'] != '' else 0,
-                'comments_got': int(post['comments_got']),
+                'comments_got': int(post['comments_got']) if post['comments_got'] != ''  else 0,
                 'shares': int(post['shares']) if post['shares'] != '' else 0,
                 'react_like_got': int(post['react_like_got']) if post['react_like_got'] != '' else 0,
                 'react_love_got': int(post['react_love_got']) if post['react_love_got'] != '' else 0,

@@ -82,7 +82,7 @@ async def scrape_profiles(from_folder, profiles, login):
             page = await context.new_page()
             await page.goto(url, wait_until="networkidle")
             #await login(page)
-            await random_sleep(50, 80)
+            await random_sleep(84, 120)
             # Save storage state
             storage = await context.storage_state()
             with open("./fb_browser_state.json", "w") as f:

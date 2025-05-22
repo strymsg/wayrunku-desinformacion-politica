@@ -234,8 +234,9 @@ class FacebookProfileScraper:
             await random_sleep(0.82, 1.83)
             # after this click the modal closes
             await self.page.locator(get_locator(locators['posts']['copy-url'])).click()
-            post_data['url'] = await self.page.evaluate_handle("navigator.clipboard.readText()").text
-            print(f'URL: {post_data["url"]}, {str(post_data["url"])}')
+            post_data['url'] = await self.page.evaluate_handle("navigator.clipboard.readText()")
+            post_data['url'] = str(post_data['url'])
+            print(f'URL: {post_data["url"]}')
         except Exception as e:
             LOGGER.warning('Could not retrieve URL for the post. (generating a random)')
             LOGGER.warning(LOGGER.format_exception(e))
