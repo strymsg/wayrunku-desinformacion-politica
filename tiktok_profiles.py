@@ -19,7 +19,7 @@ LOGGER = CustomLogger('tiktok_profiles 🏃')
 
 # TODO: parametrize these vars
 MAX_VIDEOS_PER_PROFILE = 20
-MAX_DAYS_AGE_PER_VIDEO = 120
+MAX_DAYS_AGE_PER_VIDEO = 8
 
 
 # ========== DB Connection and session ==========
