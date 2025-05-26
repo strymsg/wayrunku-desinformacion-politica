@@ -1,0 +1,19 @@
+*.csv
+
+# emacs temps
+*~
+.*
+\#
+
+*.pyc
+*.db
+
+dags/conf.yaml
+airflow-scheduler.*
+
+logs/
+venv/
+data/
+
+# browser state
+fb_browser_state.json
