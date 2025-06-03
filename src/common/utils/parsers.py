@@ -104,8 +104,10 @@ def facebook_date_text_parser(date_str) -> str:
     E.g.:
     - viernes, 2 de mayo de 2025 a las 5:36 pm --> 2025-05-02
     - domingo, 4 de mayo de 2025 a las 3:41 pm --> 2025-05-04
+    - 12 de abril --> 2025-04-12
     """
     print(f'date_str: {date_str}')
+
 
     day = ''
     month_es = ''
@@ -115,22 +117,38 @@ def facebook_date_text_parser(date_str) -> str:
         # Split into day, Spanish month, and year
         day, month_es, year = date_part.split(" de ")
     else:
-        day, month_es, year = date_str.split(" de ")
+        try:
+            day, month_es, year = date_str.split(" de ")
+        except Exception as e:
+            day, month_es = date_str.split(" de ")
+            year = str(dt.now().year)
 
     # Dictionary to map Spanish months to English
     spanish_months = {
         'enero': 'January',
-        'Febrero': 'February',
+        'ene': 'January', # bug?
+        'febrero': 'February',
+        'feb': 'February', #bug?
         'marzo': 'March',
+        'mar': 'March', # bug?
         'abril': 'April',
+        'abr': 'April', # bug?
         'mayo': 'May',
+        'may': 'May', # bug when getting string?
         'junio': 'June',
+        'jun': 'June', # bug?
         'julio': 'July',
+        'jul': 'June', # bug?
         'agosto': 'August',
+        'ago': 'August', # bug?
         'septiembre': 'September',
+        'sep': 'September', # bug?
         'octubre': 'October',
+        'oct': 'October', # bug?
         'noviembre': 'November',
-        'diciembre': 'December'
+        'nov': 'November', # bug?
+        'diciembre': 'December',
+        'dic': 'December' # bug?
     }
     # Translate the Spanish month to English
     month_en = spanish_months[month_es.lower()]
@@ -145,15 +163,22 @@ def get_number_facebook(text) -> int:
     E.g.:
     - 12 mil seguidores -> 12000
     - 851 seguidos -> 851
+    - 51.011 -> 51011
+    - ' ' -> 0
+    - 23.551 seguidores -> 23551
     """
     if not isinstance(text, str):
         return
 
+    if text == '':
+        return 0
+
     text = text.replace(u'\xa0', u' ')
-    pattern = r"(?P<num>\d+[,|.]*\d*) ?(?P<escala>mil|mill.)* ?(?P<contando>seguidos|seguidores|comentarios|veces compartido])*"
+    pattern = r"(?P<num>\d+[,|.]*\d*) ?(?P<escala>mil|mill.)*(?P<contando>[\w\s]+)*"
     matches = list(re.finditer(pattern, text))
     if len(matches) == 0:
         print(f"no match for '{text}' with {pattern}")
+        return int(float(text))
         return text
     try:
         obtained = matches[0].groupdict()
@@ -165,7 +190,9 @@ def get_number_facebook(text) -> int:
     print(obtained)
     multiplier = 1
     if obtained['escala'] is None:
-        return obtained['num']
+        if obtained['num'].count('.') > 0:
+            return str(int(float(obtained['num'])*1000))
+        return str(int(obtained['num']))
     elif obtained['escala'] == 'mil':
         multiplier = 1000
     elif obtained['escala'] == 'mill.':

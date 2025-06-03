@@ -71,6 +71,7 @@ CREATE TABLE posts(
        react_angry_got INT,
        react_like_got INT,
        react_icare_got INT,
+       total_reactions INT,
        hashtags INT,
        hyperlinks INT,
        extraction_status TEXT,

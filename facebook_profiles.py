@@ -43,6 +43,70 @@ session = Session()
 async def scrape_profiles(from_folder, profiles, login):
 
     profiles_to_scrape = []
+    # lista para ignorar perfiles
+    to_ignore = [
+        'Mauro Landivar ',
+        'Maria Galindo',
+        'Sayuri Loza',
+        'ROSA TATIANA AÑEZ CARRASCO',
+        'PAULA PAXI SUXO',
+        'EVA LUZ HUMEREZ ALVEZ',
+        'Jimena Antelo',
+        'Rosario Callejas',
+        'Nadia Montaño',
+        'Roxana Pérez',
+        'Coordinadora de la Mujer - Observatorio de Género BO',
+        'Roxana Duchên',
+        'Mamás Sororas de Bolivia ',
+        'Angirü Bolivia ',
+        'Carla Sandy Claure ',
+        'Mueres Creando',
+        'Por la vida de las mujeres',
+        'Quya Reyna ',
+        'Susana Bejarano',
+        'Ciberwarmis - Mujeres ayudando a mujeres',
+        'Natalia Aparicio',
+        'MARIA BERTHA GUTIERREZ MENDOZA',
+        'AZUCENA ALEJANDRA FUERTES MAMANI',
+        'MARIA KHALINE MORENO CARDENAS',
+        'Carola Antezana',
+        'Laura Luisa Nayar',
+        'ERICKA CHAVEZ AGUILERA',
+        'Ana Lucía Velasco',
+        'Cinthia Guidi',
+        'LORENA ANAIZ PEREZ DAVALOS',
+        'MAGDALENA MOGRO LACUNZA',
+        'MARIA ESTHER GONGORA MIRANDA',
+        'Nelly Flores',
+        'Omarth Luna',
+        'Wikimedistas de Bolivia',
+        'Yessica Villarroel Caraballo',
+        'LUCIANA MICHELLE CAMPERO CHAVEZ',
+        'Luciana Campero',
+        'La Pesada Subversiva ',
+        'YHISSEL MARISOL DAVALO LANCEA',
+        'Joshua Bellot',
+        'ROSS MARY BRAVO SALAZAR',
+        'El Confesionario UCB ',
+        'Silvana Mucarzel',
+        'Maria Rene Alvarez ',
+        'María Patricia Arce',
+        'Víctimas de Feminicidio e Infanticidio Bolivia ',
+        'MARLENE FERNANDEZ MEJIAS',
+        'CLAUDIA MALLON VARGAS',
+        'SILVANA MUCARZEL DEMETRY',
+        'FELIPA RAMOS MAMANI',
+        'Jhanisse V. Daza',
+        'Sofi Rocha',
+        'YESENIA YARHUI ALBINO',
+        'KARINA PATRICIA LIEBERS CACERES',
+        'ELIANA RINA ACOSTA QUISPE',
+        'Andrea Barrientos',
+        'Jorge Copa',
+        'MARILU EUGENIA RAMOS MAMANI',
+        'Angirü Bolivia ',
+    ]
+    
     if profiles != '':
         profiles_to_scrape = profiles.split(',')
     elif from_folder != '':
@@ -60,12 +124,27 @@ async def scrape_profiles(from_folder, profiles, login):
                        'Nombre' not in reader.fieldnames or 'Facebook' not in reader.fieldnames:
                         LOGGER.debug(f'Skipping {file}, does not have needed columns.')
                         continue
+
                     for row in reader:
+                        if len(row['Nombre']) < 2 or len(row['Facebook']) < 10:
+                            LOGGER.debug(f'Skipping {row["Nombre"]} incomplete data.')
+                            continue
+
+                        if 'ignorar' in reader.fieldnames:
+                            if row['ignorar'] == 1:
+                                continue
+
+                        if row['Nombre'] in to_ignore:
+                            continue
+
                         profiles_to_scrape.append({
                             'name': row['Nombre'],
                             'url': row['Facebook']
                         })
                         LOGGER.debug(f'Added: {row["Nombre"]}: {row["Facebook"]}.')
+        # removing duplicates
+        profiles_to_scrape = [dict(t) for t in {tuple(d.items()) for d in profiles_to_scrape}]
+        LOGGER.info(f'\n\nTotal of {len(profiles_to_scrape)} profiles to scrape.\n : : : : : :')
     if login:
         LOGGER.info("DO LOGIN")
         # TODO: Login
@@ -146,7 +225,7 @@ async def scrape_profiles(from_folder, profiles, login):
                 profile_registered = profiles_dh.upsert_for_today({
                     'name': profile_data['name'],
                     'country_origin': 'unknown',
-                    'creation_date': profile_data['creation_date'],
+                    'creation_date': profile_data.get('creation_date', None),
                     'followers': int(profile_data['followers_count']),
                     'following': int(profile_data['following_count']),
                     'platform': 'facebook',

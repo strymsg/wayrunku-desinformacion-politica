@@ -44,6 +44,7 @@ class Posts(DbBase, BaseModelMembers):
     react_wow_got = Column(Integer)
     react_angry_got = Column(Integer)
     react_icare_got = Column(Integer)
+    total_reactions = Column(Integer)
     hashtags = Column(Integer)
     hyperlinks = Column(Integer)
     extraction_status = Column(String, default='incomplete')
