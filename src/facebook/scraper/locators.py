@@ -20,6 +20,10 @@ locators = {
         },
         'friends': {
             
+        },
+        'restricted-profile': {
+            'stype': 'xpath',
+            'value': '//div[@class="xzsf02u x1rrkw1b x1lkfr7t"][@aria-level="1"][contains(text(), "restringió su perfil")]'
         }
     },
     'figure-profiles': {
@@ -42,6 +46,10 @@ locators = {
         }
     },
     'posts': {
+        'container-by-number': {
+            'stype': 'xpath',
+            'value': lambda number: f'//div[@aria-posinset="{number}"][@class="x1a2a7pz"]'
+        },
         'container': { # parece ser
             'stype': 'xpath',
             #'value': '//div[@class="x1a2a7pz"]'
@@ -93,16 +101,25 @@ locators = {
         },
         'share-count-rel-to-comment': { # relative to comment count
             'stype': 'xpath',
-            'value': "./../../..//span[contains(@class, 'xkrqix3 x1sur9pj')][contains(text(), 'compartido')]"
+            'value': lambda root_locator: f"{root_locator}/../../..//span[contains(@class, 'xkrqix3 x1sur9pj')][contains(text(), 'compartido')]"
         },
         'share-btn-rel-to-comment': { # relative to comment count
             'stype': 'xpath',
-            'value': './../../../../../..//span[@data-ad-rendering-role="share_button"]'
+            'value': lambda root_locator: f'{root_locator}/../../../../../..//span[@data-ad-rendering-role="share_button"]'
+        },
+        'share-btn-rel-to-like-btn': { # relative to like button
+            'stype': 'xpath',
+            'value': lambda root_locator: f'{root_locator}//span[@data-ad-rendering-role="me gusta_button"]/../../../../../..//span[@data-ad-rendering-role="share_button"]' 
         },
         'copy-url': {
             # This works by first clicking `share-btn-rel-to-comment'
             'stype': 'xpath',
             'value': '//div[@class="x9f619 x1n2onr6 x1ja2u2z x78zum5 xdt5ytf x1iyjqo2 x2lwn1j"]//span[text()="Copiar enlace"]'
+        },
+        'react-total-reactions': {
+            'stype': 'xpath',
+            #'value': lambda root_locator: f'{root_locator}//span[@class="x1e558r4"]'
+            'value': lambda root_locator: f'{root_locator}//span[@class="x1e558r4"]/../../../../../../div'
         },
         'react-like-count': {
             # me gusta
@@ -156,7 +173,7 @@ locators = {
         # child element of post
         'posted-date-c': {
             'stype': 'xpath',
-            'value': './/div[@class="xu06os2 x1ok221b"]//span[@class="x1rg5ohu x6ikm8r x10wlt62 x16dsc37 xt0b8zv"]'
+            'value': lambda root_locator: f'{root_locator}//div[@class="xu06os2 x1ok221b"]//span[@class="x1rg5ohu x6ikm8r x10wlt62 x16dsc37 xt0b8zv"]'
         },
         'posted-date-text': {
             # Para obtener el texto de la fecha de publicacion, primero hay que hacer hover en
@@ -201,6 +218,45 @@ locators = {
             # aria-labelledyby=<Nombre del perfil>
             
             
-            }
+        },
+
+        ## Para reels ##
+        'post-reel-url-rel-to-content-locator': {
+            # Para obtener la url de un reel, la estrategia es:
+            # Usar el locator de contenido dinamico, por ejemplo «r1ea» y combinarlo con este
+            # asi queda: //*[@id='«r1ea»']//a[@aria-label="Abrir reel en el visor de Reels"]
+            # De este elemento la url se encuentra en la prop. href
+            'stype': 'xpath',
+            'value': lambda post_locator: f'{post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]'
+        },
+        'post-reel-content-rel-to-content-locator': {
+            'stype': 'xpath',
+            'value': lambda post_locator: f'{post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//div[@class="xdj266r x11i5rnm xat24cr x1mh8g0r x1vvkbs x126k92a"]'
+        },
+        'post-reel-date-rel-to-content-locator': {
+            # Esto devuelve un array, solo se debe seleccionar el primer elemento o
+            # construir:
+            # (//*[@id='«r1ea»']//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="html-span xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x1hl2dhg x16tdsg8 x1vvkbs x4k7w5x x1h91t0o x1h9r5lt x1jfb8zj xv2umb2 x1beo9mf xaigb6o x12ejxvf x3igimt xarpa2k xedcshv x1lytzrv x1t2pt76 x7ja8zs x1qrby5j"])[1]
+            'stype': 'xpath',
+            'value': lambda post_locator: f'({post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="html-span xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x1hl2dhg x16tdsg8 x1vvkbs x4k7w5x x1h91t0o x1h9r5lt x1jfb8zj xv2umb2 x1beo9mf xaigb6o x12ejxvf x3igimt xarpa2k xedcshv x1lytzrv x1t2pt76 x7ja8zs x1qrby5j"])[1]'
+        },
+        'post-reel-reactions-to-content-locator': {
+            # Construir obteniendo el quinto elemento, ejemplo:
+            # (//*[@id='«re»']//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[5]
+            'stype': 'xpath',
+            'value': lambda post_locator: f'({post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[5]'
+        },
+        'post-reel-comments-to-content-locator': {
+            # Construir obteniendo el quinto elemento, ejemplo:
+            # (//*[@id='«re»']//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[6]
+            'stype': 'xpath',
+            'value': lambda post_locator: f'({post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[6]'
+        },
+        'post-reel-shares-to-content-locator': {
+            # Construir obteniendo el quinto elemento, ejemplo:
+            # (//*[@id='«re»']//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[7]
+            'stype': 'xpath',
+            'value': lambda post_locator: f'({post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[7]'
+        },        
     }
 }

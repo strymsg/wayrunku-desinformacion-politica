@@ -168,6 +168,8 @@ class PostsDataHandler():
                 'react_wow_got': int(post['react_wow_got']) if post['react_wow_got'] != '' else 0,
                 'react_angry_got': int(post['react_angry_got']) if post['react_angry_got'] != '' else 0,
                 'react_icare_got': int(post['react_icare_got']) if post['react_icare_got'] != '' else 0,
+                'total_reactions': int(post['total_reactions']),
+                'is_shared': post['is_shared'] if post['is_shared'] != 0 else 0,
                 'extraction_status': 'completed',
                 # TODO:
                 #'is_shared':
