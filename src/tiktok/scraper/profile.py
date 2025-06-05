@@ -57,28 +57,30 @@ class TikTokProfileScraper:
         
 
 
-    async def load_profile_page(self, username: str):
-        """Loads the profile using username's url
+    async def load_profile_page(self, url: str):
+        """Loads the profile using its url
         Parameters:
         p (async_playwright) Async playwrigth instance.
         """
-        url = f"https://www.tiktok.com/@{username}"
+        #url = f"https://www.tiktok.com/@{username}"
         try:
             await self.page.goto(url, wait_until="networkidle")
         except Exception as e:
-            LOGGER.error(f'Error loading profile {username}')
+            LOGGER.error(f'Error loading profile {url}')
             LOGGER.error(LOGGER.format_exception(e))
             raise e
         await handle_captcha(self.page)
     
 
-    async def get_profile_basics(self, username):
+    async def get_profile_basics(self, profile):
         """Performs scraping to get basic data of the given profile.
         This basic data is followers, following, likes and video counts
         """
+        username = profile['url'].split('@')[1]
         profile_data = {
             'username': username,
-            'url': f"https://www.tiktok.com/@{username}"
+            'name': profile['name'],
+            'url': profile['url']
         }
 
         # get profile general stats
@@ -283,20 +285,20 @@ class TikTokProfileScraper:
         pass
 
 
-    async def scrape_profile_basics(self, username: str) -> Dict:
+    async def scrape_profile_basics(self, profile: Dict) -> Dict:
         """Gets basic data information doing web scraping. Data includes:
         Basic profile stats, video counts
 
         Parameters:
-        username (str): user name
+        profile (Dict): Profile data, can be obtained with self.scrape_profile_basics
         """
         try:
-            await self.load_profile_page(username)
+            await self.load_profile_page(profile['url'])
         except Exception as e:
             raise e
 
         #1. Get general stats
-        profile_data = await self.get_profile_basics(username)
+        profile_data = await self.get_profile_basics(profile)
         
         #2. Get videos and views data (check date to avoid duplication)
         profile_data['videos'] = await self.get_video_count_and_videos()
@@ -418,7 +420,7 @@ class TikTokProfileScraper:
             if done:
                 break
 
-            await self.load_profile_page(profile_data['username'])
+            await self.load_profile_page(profile_data['url'])
             
         return profile_data
             
@@ -452,37 +454,4 @@ class TikTokProfileScraper:
             counts['saves_got'] = (int(get_number_tiktok(video['savedCount'])))
             counts['comments_got'] = int(get_number_tiktok(video['commentCount']))
         return counts
-
-
-    async def scrape_entire_profile(self, username, get_comments_text = False) -> Dict:
-        """Gets full data of a profile doing web scraping
-
-        Parameters:
-        username (str): user name
-        get_comments_text (bool): If true, it will scrape all comments in videos and obtain its contents
-        """
-        await self.load_profile_page(username)
-
-        #1. Get general stats
-        profile_data = await self.get_profile_basics(username)
-        
-        #2. Get videos and views data (check date to avoid duplication)
-        profile_data['videos'] = await self.get_video_count_and_videos()
-        
-        #3. Enter videos and get info (check date to avoid duplication)
-        #  -  If get comments text is enabled scroll to comments and get info (check date!)
-        for i, video in enumerate(profile_data['videos']):
-            print('CLICKING...')
-            #profile_data['videos'][i] = await self.extract_video_info(video['url'])
-            profile_data['videos'][i] = await self.scrape_videos_by_clicking()
-            print("Video info obtained...")
-            print(profile_data['videos'][i])
-
-            if get_comments_text:
-                # TODO:
-                print("Getting comments text")
-
-        #4. Return videos info
-        return profile_data
-
 

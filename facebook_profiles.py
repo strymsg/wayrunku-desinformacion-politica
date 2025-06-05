@@ -20,8 +20,10 @@ from src.common.utils.time import random_sleep, today_yyyymmdd, age_in_days, \
 LOGGER = CustomLogger('fb_profiles 🏃')
 
 # TODO: parametrize these vars
-MAX_POST_AGE = 7
-MAX_POSTS = 30
+#MAX_POST_AGE = 7
+MAX_POST_AGE = 156
+MAX_POSTS = 450
+#MAX_POSTS = 30
 
 # ========== DB Connection and session ==========
 db = DbManager.create()
@@ -109,7 +111,6 @@ async def scrape_profiles(from_folder, profiles, login):
     else:
         LOGGER.info("Using previous session avoiding to login.")
     
-
     facebook_profile_scraper = FacebookProfileScraper(max_days_age=MAX_POST_AGE,
                                                       max_posts=MAX_POSTS, max_fails=10)
     

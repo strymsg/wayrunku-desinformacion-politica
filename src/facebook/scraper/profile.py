@@ -245,7 +245,6 @@ class FacebookProfileScraper:
         LOGGER.debug(f'Trying to get POST number {number}')
 
         post_locator = await self.get_next_post_locator_by_number(number)
-        print('>>>>>>' , post_locator)
         if post_locator == '':
             LOGGER.info('No next post, skipping')
             return post_data
@@ -287,17 +286,21 @@ class FacebookProfileScraper:
 
         if await self.page.locator(_locator).count() > 0:
             post_data['post_type'] = 'reel'
-            LOGGER.debug(f'>>>> post type: {post_data["post_type"]}')
-            
+            LOGGER.debug('>>>>>> post type: reel')
             _locator = get_locator(
                 locators['posts']['post-reel-date-rel-to-content-locator'], post_locator)
+            print(f'date_locator: {_locator}' )
+            # await self.page.locator(_locator).hover()
+            # await random_sleep(2.7, 3.3)
+            # date_text_raw = await get_text_from_page_and_locator(self.page,
+            #     locators['posts']['posted-date-text'], throw_exception=False)
             date_text_raw = await get_text_from_page_and_locator(
-                self.page, {'stype':'xpath', 'value': _locator.split('xpath=')[1] },
+                self.page, {'stype': 'xpath', 'value': _locator.split('xpath=')[1]},
                 throw_exception=False)
             post_data['creation_date'] = facebook_date_text_parser(date_text_raw)
         else:
             post_data['post_type'] = 'post'
-            LOGGER.debug(f'>>>> post type: {post_data["post_type"]}')
+            LOGGER.debug('>>>>>> post type: post')
             _locator = get_locator(locators['posts']['posted-date-c'], post_locator)
             print(f'>>>1>>> {_locator}')
 
@@ -484,23 +487,28 @@ class FacebookProfileScraper:
             ## Reels
 
             LOGGER.debug('Getting: url')
-            _locator += get_locator(
+            _locator = get_locator(
                 locators['posts']['post-reel-url-rel-to-content-locator'], post_locator)
+            print(f' url locator:| {_locator}   |')
             post_data['url'] = await self.page.locator(_locator).get_attribute('href')
-
+            print(f' >> {post_data["url"]}')
+            
             LOGGER.debug('Getting: content')
             _locator = get_locator(
                 locators['posts']['post-reel-content-rel-to-content-locator'],
                 post_locator)
             post_data['content'] = await get_text_from_page_and_locator(
-                self.page, _locator, throw_exception=False)
+                self.page, {'stype': 'xpath', 'value': f'{_locator.split("xpath=")[1]}'},
+                throw_exception=False)
 
             LOGGER.debug('Getting: reactions')
             _locator = get_locator(
-                locator['posts']['post-reel-reactions-to-content-locator'],
+                locators['posts']['post-reel-reactions-to-content-locator'],
                 post_locator)
-            post_data['react_like_'] = await get_text_from_page_and_locator(
-                self.page, _locator, throw_exception=False)
+            await scroll_until_element_found(self.page, _locator, throw_exception=False)
+            _locator = _locator.split('xpath=')[1]
+            post_data['react_like_got'] = await get_text_from_page_and_locator(
+                self.page, { 'stype': 'xpath', 'value': _locator }, throw_exception=False)
             post_data['react_like_got'] = get_number_facebook(post_data['react_like_got'])
             post_data['total_reactions'] = post_data['react_like_got']
 
@@ -508,16 +516,18 @@ class FacebookProfileScraper:
             _locator = get_locator(
                 locators['posts']['post-reel-comments-to-content-locator'],
                 post_locator)
+            _locator = _locator.split('xpath=')[1]
             post_data['comments_got'] = await get_text_from_page_and_locator(
-                self.page, _locator, throw_exception=False)
+                self.page, { 'stype': 'xpath', 'value': _locator }, throw_exception=False)
             post_data['comments_got'] = get_number_facebook(post_data['comments_got'])
             
             LOGGER.debug('Getting: shares')
             _locator = get_locator(
                 locators['posts']['post-reel-shares-to-content-locator'],
                 post_locator)
+            _locator = _locator.split('xpath=')[1]
             post_data['shares'] = await get_text_from_page_and_locator(
-                self.page, _locator, throw_exception=False)
+                self.page, { 'stype': 'xpath', 'value': _locator }, throw_exception=False)
             post_data['shares'] = get_number_facebook(post_data['shares'])
             # TODO: See if content_media could be stored and to what end?
             LOGGER.debug('Getting: media content')

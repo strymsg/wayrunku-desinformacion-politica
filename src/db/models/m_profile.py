@@ -25,6 +25,7 @@ class MProfile(DbBase, BaseModelMembers):
 
     name = Column(String, unique=True)
     url = Column(String)
+    is_candidate = Column(Integer, default=0)
     creation_date = Column(Date, default=today_yyyymmdd())
 
     # def row2dict(row):

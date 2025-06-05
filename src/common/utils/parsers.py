@@ -218,11 +218,12 @@ def get_unique_locators_for_post_attrs(aria_described_by: str, aria_labelledby: 
     aria_described_by = aria_described_by.replace(u'\xa0', u' ')
     aria_labelledyby = aria_labelledby.replace(u'\xa0', u' ')
     
-    pattern = r"(?P<date>«\w+»)\ (?P<content_text>«\w+»)\ (?P<content_media>«\w+»)\ (?P<react_btn>«\w+»)\ (?P<comment_count>«\w+»)"
+    #pattern = r"(?P<date>«\w+»)\ (?P<content_text>«\w+»)\ (?P<content_media>«\w+»)\ (?P<react_btn>«\w+»)\ (?P<comment_count>«\w+»)"
+    pattern = r"(?P<date>\w+)\ (?P<content_text>\w+)\ (?P<content_media>\w+)\ (?P<react_btn>\w+)\ (?P<comment_count>\w+)"
     matches = list(re.finditer(pattern, aria_described_by))
     if len(matches) == 0:
         print(f"no match for '{aria_described_by}' with {pattern}")
-        return text
+        return aria_described_by
     try:
         obtained = matches[0].groupdict()
     except Exception as E:
@@ -282,8 +283,11 @@ def get_unique_locators_for_post_attrs(aria_described_by: str, aria_labelledby: 
         }
     }
 
-    text = aria_labelledby.split('«')[1]
-    text = text.split('»')[0]
+    # text = aria_labelledby.split('«')[1]
+    # text = text.split('»')[0]
+    text = aria_labelledby.split('_')[1]
+    text = text.split('_')[0]
+
     _dict['profile_name'] = {
         'css': f'#{text}',
         'xpath': f'//*[@id="{text}"]'

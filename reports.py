@@ -29,8 +29,8 @@ engine = db.engine
 
 DESTINY_FOLDER='./data/reports/'
 
-SNAPSHOT_DATE_FROM = '2025-05-23'
-SNAPSHOT_DATE_TO = '2025-05-23'
+SNAPSHOT_DATE_FROM = '2025-06-02'
+SNAPSHOT_DATE_TO = '2025-06-03'
 
 @click.command()
 @click.option(
@@ -56,10 +56,7 @@ def do_reports(from_date, to_date):
 	SUM(p.react_haha_got) as "me divierte", SUM(p.react_sad_got) as "me entristece",
 	SUM(p.react_angry_got) as "me enoja", SUM(p.react_wow_got) as "me sorprende",
 	SUM(p.react_icare_got) as "me importa",
-	(	SUM(p.shares) + SUM(p.likes_got) + SUM(p.react_love_got) +
-	SUM(p.react_haha_got) + SUM(p.react_sad_got) +
-	SUM(p.react_angry_got) + SUM(p.react_wow_got) +
-	SUM(p.react_icare_got) ) as "reacciones en total",
+        SUM(p.total_reactions) as "reacciones en total",
 	mp.url 
     from posts p
     inner join profiles prof ON prof.id = p.id_profile 
@@ -105,10 +102,8 @@ def do_reports(from_date, to_date):
 	  prof.followers as "seguidores" , prof."following" as "seguidos",
 	  p.creation_date as "fecha post",
 	  p.url as "url post", p.shares as "comparticiones",
-	  (p.react_like_got +	p.react_love_got +
-	  p.react_haha_got + p.react_sad_got +
-	  p.react_wow_got + p.react_angry_got + p.react_icare_got) as "reacciones en total",
-	  p.react_like_got as "me gusta",	p.react_love_got as "me encanta",
+	  p.total_reactions as "reacciones en total",
+	  p.react_like_got as "me gusta", p.react_love_got as "me encanta",
 	  p.react_haha_got as "me divierte", p.react_sad_got as "me entristece",
 	  p.react_wow_got as "me sorprende", p.react_angry_got as "me enoja",
 	  p.react_icare_got as "me importa",

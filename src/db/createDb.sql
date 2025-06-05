@@ -5,6 +5,7 @@ CREATE TABLE m_profile(
        name TEXT,
        url TEXT,
        creation_date DATE,
+       is_candidate INT DEFAULT 0,
        UNIQUE(name)
 );
 

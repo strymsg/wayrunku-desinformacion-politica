@@ -119,7 +119,8 @@ locators = {
         'react-total-reactions': {
             'stype': 'xpath',
             #'value': lambda root_locator: f'{root_locator}//span[@class="x1e558r4"]'
-            'value': lambda root_locator: f'{root_locator}//span[@class="x1e558r4"]/../../../../../../div'
+            #'value': lambda root_locator: f'{root_locator}//span[@class="x1e558r4"]/../../../../../../div',
+            'value': lambda root_locator: f'{root_locator}//span[@class="xt0b8zv x1jx94hy xrbpyxo x1lbueug"]'
         },
         'react-like-count': {
             # me gusta
@@ -158,7 +159,8 @@ locators = {
         },
         'react-modal-close': {
             'stype': 'css',
-            'value': 'div.x1d52u69.xktsk01 > div[aria-label="Cerrar"]'
+            #'value': 'div.x1d52u69.xktsk01 > div[aria-label="Cerrar"]'
+            'value': 'div.xyqm7xq.x1ys307a > div[aria-label="Cerrar"]'
         },
         'posted-by': {
             # Nombre del perfil que hizo el post original
@@ -231,32 +233,41 @@ locators = {
         },
         'post-reel-content-rel-to-content-locator': {
             'stype': 'xpath',
-            'value': lambda post_locator: f'{post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//div[@class="xdj266r x11i5rnm xat24cr x1mh8g0r x1vvkbs x126k92a"]'
+            #'value': lambda post_locator: f'{post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//div[@class="xdj266r x11i5rnm xat24cr x1mh8g0r x1vvkbs x126k92a"]'
+            'value': lambda post_locator: f'{post_locator}//div[@class="xdj266r x14z9mp xat24cr x1lziwak x1vvkbs x126k92a"]'
         },
         'post-reel-date-rel-to-content-locator': {
             # Esto devuelve un array, solo se debe seleccionar el primer elemento o
             # construir:
             # (//*[@id='«r1ea»']//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="html-span xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x1hl2dhg x16tdsg8 x1vvkbs x4k7w5x x1h91t0o x1h9r5lt x1jfb8zj xv2umb2 x1beo9mf xaigb6o x12ejxvf x3igimt xarpa2k xedcshv x1lytzrv x1t2pt76 x7ja8zs x1qrby5j"])[1]
             'stype': 'xpath',
-            'value': lambda post_locator: f'({post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="html-span xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x1hl2dhg x16tdsg8 x1vvkbs x4k7w5x x1h91t0o x1h9r5lt x1jfb8zj xv2umb2 x1beo9mf xaigb6o x12ejxvf x3igimt xarpa2k xedcshv x1lytzrv x1t2pt76 x7ja8zs x1qrby5j"])[1]'
+            #'value': lambda post_locator: f'({post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="html-span xdj266r x14z9mp xat24cr x1lziwak xexx8yu xyri2b x18d9i69 x1c1uobl x1hl2dhg x16tdsg8 x1vvkbs x4k7w5x x1h91t0o x1h9r5lt x1jfb8zj xv2umb2 x1beo9mf xaigb6o x12ejxvf x3igimt xarpa2k xedcshv x1lytzrv x1t2pt76 x7ja8zs x1qrby5j"])[1]'
+
+            # Revisar lo anterior ^^^ por alguna razon el locator no funciona usando desde playwright, pero en los navegadores directamente si.
+
+            'value': lambda post_locator: f'{post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//div[@class="xsxvzsj x1m3v4wt x17qophe x10l6tqk x13vifvy xjl7whj"]//span[text()="Reels"]/span[@class="html-span xdj266r x14z9mp xat24cr x1lziwak xexx8yu xyri2b x18d9i69 x1c1uobl x1hl2dhg x16tdsg8 x1vvkbs x4k7w5x x1h91t0o x1h9r5lt x1jfb8zj xv2umb2 x1beo9mf xaigb6o x12ejxvf x3igimt xarpa2k xedcshv x1lytzrv x1t2pt76 x7ja8zs x1qrby5j x1mshkth"]'
         },
         'post-reel-reactions-to-content-locator': {
             # Construir obteniendo el quinto elemento, ejemplo:
             # (//*[@id='«re»']//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[5]
             'stype': 'xpath',
-            'value': lambda post_locator: f'({post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[5]'
+            #'value': lambda post_locator: f'({post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[5]'
+            #'value': lambda post_locator: f'{post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//div[@aria-label="Me gusta"]/../..//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"]',
+            'value': lambda post_locator: f'{post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//div[@aria-label="Me gusta"]/../..//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft x1j85h84"]'
         },
         'post-reel-comments-to-content-locator': {
             # Construir obteniendo el quinto elemento, ejemplo:
             # (//*[@id='«re»']//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[6]
             'stype': 'xpath',
-            'value': lambda post_locator: f'({post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[6]'
+            'value': lambda post_locator: f'{post_locator}//div[@aria-label="Comentar"]/../..//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft x1j85h84"]'
+            #'value': lambda post_locator: f'({post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[6]'
         },
         'post-reel-shares-to-content-locator': {
             # Construir obteniendo el quinto elemento, ejemplo:
             # (//*[@id='«re»']//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[7]
             'stype': 'xpath',
-            'value': lambda post_locator: f'({post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[7]'
+            #'value': lambda post_locator: f'({post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[7]'
+            'value': lambda post_locator: f'{post_locator}//div[@aria-label="Compartir"]/../..//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft x1j85h84"]'
         },        
     }
 }
