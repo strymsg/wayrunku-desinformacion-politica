@@ -265,6 +265,7 @@ class FacebookProfileScraper:
         locators_for_post = get_unique_locators_for_post_attrs(aria_described_by, aria_labelledby)
 
         # Some default values to avoid errors when saving
+        post_data['is_shared'] = 0
         post_data['media_content'] = ''
         post_data['total_reactions'] = 0
         post_data['react_like_got'] = 0

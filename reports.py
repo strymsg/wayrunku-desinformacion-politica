@@ -29,8 +29,8 @@ engine = db.engine
 
 DESTINY_FOLDER='./data/reports/'
 
-SNAPSHOT_DATE_FROM = '2025-06-02'
-SNAPSHOT_DATE_TO = '2025-06-03'
+SNAPSHOT_DATE_FROM = '2025-06-04'
+SNAPSHOT_DATE_TO = '2025-06-05'
 
 @click.command()
 @click.option(
@@ -57,6 +57,7 @@ def do_reports(from_date, to_date):
 	SUM(p.react_angry_got) as "me enoja", SUM(p.react_wow_got) as "me sorprende",
 	SUM(p.react_icare_got) as "me importa",
         SUM(p.total_reactions) as "reacciones en total",
+	(case when SUM(mp.is_candidate) > 1 then 'sí' else 'no' end) as "candidato identificado",
 	mp.url 
     from posts p
     inner join profiles prof ON prof.id = p.id_profile 
@@ -98,7 +99,7 @@ def do_reports(from_date, to_date):
 
         query = text(f"""
         select mp."name" as "nombre perfil" , mp.url as "url perfil",
-	  prof.creation_date as "creación del perfil",
+	  (case when mp.is_candidate = 1 then 'sí' else 'no' end) as "candidato identificado",        	    prof.creation_date as "creación del perfil",
 	  prof.followers as "seguidores" , prof."following" as "seguidos",
 	  p.creation_date as "fecha post",
 	  p.url as "url post", p.shares as "comparticiones",
@@ -152,5 +153,116 @@ def do_reports(from_date, to_date):
             LOGGER.info(f'Report saved {record["filename"]} ({len(record["rows"])})')
 
 
+        # ====== Reporte acumulado resumen (facebook)
+        # Todos los posts por perfil monitoreado con resumenes del 2025
+
+        query = text(f"""
+        select mp.name,
+          COUNT(*) as "posts publicados",
+          SUM(prof.followers) as "seguidores", SUM(prof."following") as "siguiendo", 
+          SUM(p.comments_got) as "comentarios obtenidos",
+          SUM(p.shares) as "posts compartidos", 
+          SUM(p.likes_got) as "me gusta", SUM(p.react_love_got) as "me encanta",
+          SUM(p.react_haha_got) as "me divierte", SUM(p.react_sad_got) as "me entristece",
+          SUM(p.react_angry_got) as "me enoja", SUM(p.react_wow_got) as "me sorprende",
+          SUM(p.react_icare_got) as "me importa",
+          SUM(p.total_reactions) as "reacciones en total",
+          (case when SUM(mp.is_candidate) > 1 then 'sí' else 'no' end) as "candidato identificado",
+          mp.url as "url del perfil"
+        from m_profile mp 
+        inner join profiles prof on prof.id_m_profile = mp.id 
+        inner join posts p on p.id_profile = prof.id
+        where p.platform = 'facebook'
+          and p.snapshot_date >= '2025-01-01' and p.snapshot_date <= '2025-12-31'
+        group by mp."name",  mp.url
+        order by COUNT(*) desc
+        """)
+
+        LOGGER.debug("Starting report 3 (Accumulated report for Facebook)")
+        LOGGER.debug(f"  SQL query:\n{query}\n")
+        
+        results = conn.execute(query)
+
+        headers = []
+        rows_to_save = []
+        for record in results:
+            if len(rows_to_save) == 0:
+                headers = [key for key in record._asdict().keys()]
+            LOGGER.debug(record._asdict())
+            rows_to_save.append([value for value in record._asdict().values()])
+
+        filename = f'{DESTINY_FOLDER}summaries/fb_acumulado_hasta_{today_yyyymmdd()}.csv'
+        LOGGER.debug(f'Writing to csv. {filename}')
+        # Escribiendo como csv
+        csv_write_headers(filename=filename,
+                          headers=headers, replace_file=True)
+
+        with open(filename, 'a', encoding='UTF-8', newline='') as f:
+            writer = csv.writer(f)
+            for row in rows_to_save:
+                writer.writerow(row)
+        LOGGER.info(f'Report saved {filename} ({len(rows_to_save)} rows.)')
+
+
+        # ======== Reporte de todos los posts por perfil
+        #  Los posts de cada perfil monitoreado dado un rango de fechas
+
+        query = text(f"""
+        select mp."name" as "nombre perfil" , mp.url as "url perfil",
+	  p.snapshot_date,
+	  prof.creation_date as "creación del perfil",
+	  (case when mp.is_candidate = 1 then 'sí' else 'no' end) as "candidato identificado",
+	  prof.followers as "seguidores" , prof."following" as "seguidos",
+	  p.creation_date as "fecha post",
+	  p.url as "url post", p.shares as "comparticiones",
+	  p.total_reactions as "reacciones en total",
+	  p.react_like_got as "me gusta", p.react_love_got as "me encanta",
+	  p.react_haha_got as "me divierte", p.react_sad_got as "me entristece",
+	  p.react_wow_got as "me sorprende", p.react_angry_got as "me enoja",
+	  p.react_icare_got as "me importa",
+	  p."content" as "contenido"
+        from posts p
+          inner join profiles prof ON prof.id = p.id_profile 
+          inner join m_profile mp on mp.id = prof.id_m_profile 
+        where p.platform = 'facebook'
+          and p.snapshot_date >= '2025-01-01'
+          and p.snapshot_date <= '2025-12-31'
+        order by  mp."name", p.creation_date
+        """)
+
+        LOGGER.debug("Starting report 4 (All posts per each profile Facebook)")
+        LOGGER.debug(f"  SQL query:\n{query}\n")
+
+        results = conn.execute(query)
+
+        headers = []
+        to_save = {}
+        for record in results:
+            dict = record._asdict()
+            if len(headers) == 0:
+                headers = [key for key in record._asdict().keys()]
+            
+            LOGGER.debug(record._asdict())
+
+            profile = record._asdict()['nombre perfil']
+            
+            if to_save.get(profile, None) is None:
+                to_save[profile] = {
+                    'filename': f'{DESTINY_FOLDER}individuals/acumulados/{profile}/fb_posts_acumulados_{profile}.csv',
+                    'rows': []
+                }
+            to_save[profile]['rows'].append([value for value in record._asdict().values()])
+            
+        # Agregando al csv correspondiente
+        for profile, record in to_save.items():
+            os.makedirs(os.path.dirname(record['filename']), exist_ok=True)
+            csv_write_headers(filename=record['filename'], headers=headers, replace_file=True)
+
+            with open(record['filename'], 'a', encoding='UTF-8', newline='') as f:
+                writer = csv.writer(f)
+                for row in record['rows']:
+                    writer.writerow(row)
+            LOGGER.info(f'Report saved {record["filename"]} ({len(record["rows"])})')
+            
 if __name__ == '__main__':
     do_reports()

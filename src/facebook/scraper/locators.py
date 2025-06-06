@@ -268,6 +268,6 @@ locators = {
             'stype': 'xpath',
             #'value': lambda post_locator: f'({post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[7]'
             'value': lambda post_locator: f'{post_locator}//div[@aria-label="Compartir"]/../..//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft x1j85h84"]'
-        },        
+        },
     }
 }
