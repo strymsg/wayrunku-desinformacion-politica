@@ -20,10 +20,10 @@ from src.common.utils.time import random_sleep, today_yyyymmdd, age_in_days, \
 LOGGER = CustomLogger('fb_profiles 🏃')
 
 # TODO: parametrize these vars
-#MAX_POST_AGE = 7
-MAX_POST_AGE = 156
-MAX_POSTS = 450
-#MAX_POSTS = 30
+MAX_POST_AGE = 8
+# MAX_POST_AGE = 156
+# MAX_POSTS = 450
+MAX_POSTS = 30
 
 # ========== DB Connection and session ==========
 db = DbManager.create()
@@ -46,7 +46,9 @@ async def scrape_profiles(from_folder, profiles, login):
 
     profiles_to_scrape = []
     # lista para ignorar perfiles por nombre
-    to_ignore = []
+    to_ignore = [
+        ######################
+    ]
     
     if profiles != '':
         profiles_to_scrape = profiles.split(',')
@@ -116,7 +118,6 @@ async def scrape_profiles(from_folder, profiles, login):
     
     profiles_dh = ProfilesDatahandler(session)
     posts_dh = PostsDataHandler(session)
-    
     
     async with async_playwright() as p:
         await facebook_profile_scraper.init(p)

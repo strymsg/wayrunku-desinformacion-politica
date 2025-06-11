@@ -156,6 +156,7 @@ class PostsDataHandler():
                 'content': post['content'],
                 'media_content': post['media_content'],
                 'platform': 'facebook',
+                'post_type': post['post_type'],
                 # TODO: register hashtags
                 # 'hashtags': ','.join(post['tags']),
                 'likes_got': int(post['react_like_got']) if post['react_like_got'] != '' else 0,

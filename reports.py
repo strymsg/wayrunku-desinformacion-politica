@@ -29,8 +29,8 @@ engine = db.engine
 
 DESTINY_FOLDER='./data/reports/'
 
-SNAPSHOT_DATE_FROM = '2025-06-04'
-SNAPSHOT_DATE_TO = '2025-06-05'
+SNAPSHOT_DATE_FROM = '2025-06-09'
+SNAPSHOT_DATE_TO = '2025-06-10'
 
 @click.command()
 @click.option(
@@ -47,26 +47,62 @@ def do_reports(from_date, to_date):
         # Todos los posts por perfil monitoreado con resumenes dado un rango de fechas
 
         query = text(f"""
-    select mp.name, p.snapshot_date,
-    COUNT(*) as "posts publicados",
-	SUM(prof.followers) as "seguidores", SUM(prof."following") as "siguiendo", 
-	SUM(p.comments_got) as "comentarios",
-	SUM(p.shares) as "posts compartidos", 
-	SUM(p.likes_got) as "me gusta", SUM(p.react_love_got) as "me encanta",
-	SUM(p.react_haha_got) as "me divierte", SUM(p.react_sad_got) as "me entristece",
-	SUM(p.react_angry_got) as "me enoja", SUM(p.react_wow_got) as "me sorprende",
-	SUM(p.react_icare_got) as "me importa",
-        SUM(p.total_reactions) as "reacciones en total",
-	(case when SUM(mp.is_candidate) > 1 then 'sí' else 'no' end) as "candidato identificado",
-	mp.url 
-    from posts p
-    inner join profiles prof ON prof.id = p.id_profile 
-    inner join m_profile mp on mp.id = prof.id_m_profile 
-    where p.platform = 'facebook'
-        and p.snapshot_date >= '{SNAPSHOT_DATE_FROM}'
-        and p.snapshot_date <= '{SNAPSHOT_DATE_TO}'
-    group by mp."name", p.snapshot_date, mp.url 
-    order by COUNT(*) desc
+WITH latest_profile AS (
+    SELECT DISTINCT ON (id_m_profile)
+        id_m_profile,
+        name,
+        followers,
+        following,
+        platform
+    FROM profiles
+        where platform = 'facebook'
+	   and snapshot_date >= '{SNAPSHOT_DATE_FROM}'
+           and snapshot_date <= '{SNAPSHOT_DATE_TO}'
+    ORDER BY id_m_profile, snapshot_date desc
+),
+post_totals AS (
+    SELECT
+        p.id_m_profile,
+	COUNT(*) as "posts publicados",
+	SUM(pst.comments_got) as "comentarios obtenidos",
+	SUM(pst.shares) as "posts compartidos", 
+	SUM(pst.likes_got) as "me gusta", SUM(pst.react_love_got) as "me encanta",
+	SUM(pst.react_haha_got) as "me divierte", SUM(pst.react_sad_got) as "me entristece",
+	SUM(pst.react_angry_got) as "me enoja", SUM(pst.react_wow_got) as "me sorprende",
+	SUM(pst.react_icare_got) as "me importa",
+	SUM(pst.total_reactions) as "reacciones en total"
+    FROM posts pst
+    JOIN profiles p ON pst.id_profile = p.id
+    where pst.platform = 'facebook'
+       and pst.snapshot_date >= '{SNAPSHOT_DATE_FROM}'
+       and pst.snapshot_date <= '{SNAPSHOT_DATE_TO}'
+    GROUP BY p.id_m_profile
+)
+SELECT 
+    mp.name,
+    COALESCE(pt."posts publicados", 0) as "posts publicados",
+    COALESCE(lp.followers, 0) AS "seguidores",
+    COALESCE(lp.following, 0) AS "siguiendo",
+    coalesce(pt."comentarios obtenidos", 0) as "comentarios obtenidos",
+    COALESCE(pt."posts compartidos", 0) AS "posts compartidos",
+    COALESCE(pt."me gusta", 0) AS "me gusta",
+    COALESCE(pt."me encanta", 0) AS "me encanta",
+    COALESCE(pt."me divierte", 0) AS "me divierte",
+    COALESCE(pt."me entristece", 0) AS "me entristece",
+    COALESCE(pt."me enoja", 0) AS "me enoja",
+    COALESCE(pt."me sorprende", 0) AS "me sorprende",
+    COALESCE(pt."me importa", 0) AS "me importa",
+    COALESCE(pt."reacciones en total", 0) as "reacciones en total",
+    (case when mp.is_candidate = 1 then 'sí' else 'no' end)
+    	  as "candidato identificado",
+    mp.url as "url del perfil",
+    mp.creation_date as "creación de perfil"
+FROM m_profile mp
+LEFT JOIN latest_profile lp ON mp.id = lp.id_m_profile
+LEFT JOIN post_totals pt ON mp.id = pt.id_m_profile
+where lp.platform = 'facebook'
+	and lp.id_m_profile = pt.id_m_profile
+order by COALESCE(pt."posts publicados", 0) desc;
     """)
 
         LOGGER.debug("Starting report 1 (summary for each profile Facebook)")
@@ -102,7 +138,9 @@ def do_reports(from_date, to_date):
 	  (case when mp.is_candidate = 1 then 'sí' else 'no' end) as "candidato identificado",        	    prof.creation_date as "creación del perfil",
 	  prof.followers as "seguidores" , prof."following" as "seguidos",
 	  p.creation_date as "fecha post",
+	  p.post_type as "tipo de post",
 	  p.url as "url post", p.shares as "comparticiones",
+          p.comments_got as "comentarios",
 	  p.total_reactions as "reacciones en total",
 	  p.react_like_got as "me gusta", p.react_love_got as "me encanta",
 	  p.react_haha_got as "me divierte", p.react_sad_got as "me entristece",
@@ -157,25 +195,60 @@ def do_reports(from_date, to_date):
         # Todos los posts por perfil monitoreado con resumenes del 2025
 
         query = text(f"""
-        select mp.name,
-          COUNT(*) as "posts publicados",
-          SUM(prof.followers) as "seguidores", SUM(prof."following") as "siguiendo", 
-          SUM(p.comments_got) as "comentarios obtenidos",
-          SUM(p.shares) as "posts compartidos", 
-          SUM(p.likes_got) as "me gusta", SUM(p.react_love_got) as "me encanta",
-          SUM(p.react_haha_got) as "me divierte", SUM(p.react_sad_got) as "me entristece",
-          SUM(p.react_angry_got) as "me enoja", SUM(p.react_wow_got) as "me sorprende",
-          SUM(p.react_icare_got) as "me importa",
-          SUM(p.total_reactions) as "reacciones en total",
-          (case when SUM(mp.is_candidate) > 1 then 'sí' else 'no' end) as "candidato identificado",
-          mp.url as "url del perfil"
-        from m_profile mp 
-        inner join profiles prof on prof.id_m_profile = mp.id 
-        inner join posts p on p.id_profile = prof.id
-        where p.platform = 'facebook'
-          and p.snapshot_date >= '2025-01-01' and p.snapshot_date <= '2025-12-31'
-        group by mp."name",  mp.url
-        order by COUNT(*) desc
+        WITH latest_profile AS (
+            SELECT DISTINCT ON (id_m_profile)
+                id_m_profile,
+                name,
+                followers,
+                following,
+                platform
+            FROM profiles
+                where platform = 'facebook'
+        			and snapshot_date >= '2025-01-01' and snapshot_date <= '2025-12-31'
+            ORDER BY id_m_profile, snapshot_date desc
+        ),
+        post_totals AS (
+            SELECT
+                p.id_m_profile,
+        	COUNT(*) as "posts publicados",
+        	SUM(pst.comments_got) as "comentarios obtenidos",
+        	SUM(pst.shares) as "posts compartidos", 
+        	SUM(pst.likes_got) as "me gusta", SUM(pst.react_love_got) as "me encanta",
+        	SUM(pst.react_haha_got) as "me divierte", SUM(pst.react_sad_got) as "me entristece",
+        	SUM(pst.react_angry_got) as "me enoja", SUM(pst.react_wow_got) as "me sorprende",
+        	SUM(pst.react_icare_got) as "me importa",
+        	SUM(pst.total_reactions) as "reacciones en total"
+            FROM posts pst
+            JOIN profiles p ON pst.id_profile = p.id
+            where pst.platform = 'facebook'
+        		and pst.snapshot_date >= '2025-01-01' and pst.snapshot_date <= '2025-12-31'
+            GROUP BY p.id_m_profile
+        )
+        SELECT 
+            mp.name,
+            COALESCE(pt."posts publicados", 0) as "posts publicados",
+            COALESCE(lp.followers, 0) AS "seguidores",
+            COALESCE(lp.following, 0) AS "siguiendo",
+            coalesce(pt."comentarios obtenidos", 0) as "comentarios obtenidos",
+            COALESCE(pt."posts compartidos", 0) AS "posts compartidos",
+            COALESCE(pt."me gusta", 0) AS "me gusta",
+            COALESCE(pt."me encanta", 0) AS "me encanta",
+            COALESCE(pt."me divierte", 0) AS "me divierte",
+            COALESCE(pt."me entristece", 0) AS "me entristece",
+            COALESCE(pt."me enoja", 0) AS "me enoja",
+            COALESCE(pt."me sorprende", 0) AS "me sorprende",
+            COALESCE(pt."me importa", 0) AS "me importa",
+            COALESCE(pt."reacciones en total", 0) as "reacciones en total",
+            (case when mp.is_candidate = 1 then 'sí' else 'no' end)
+            	  as "candidato identificado",
+            mp.url as "url del perfil",
+            mp.creation_date as "creación de perfil"
+        FROM m_profile mp
+        LEFT JOIN latest_profile lp ON mp.id = lp.id_m_profile
+        LEFT JOIN post_totals pt ON mp.id = pt.id_m_profile
+        where lp.platform = 'facebook'
+        	and lp.id_m_profile = pt.id_m_profile
+        order by COALESCE(pt."posts publicados", 0) desc;
         """)
 
         LOGGER.debug("Starting report 3 (Accumulated report for Facebook)")
@@ -214,7 +287,9 @@ def do_reports(from_date, to_date):
 	  (case when mp.is_candidate = 1 then 'sí' else 'no' end) as "candidato identificado",
 	  prof.followers as "seguidores" , prof."following" as "seguidos",
 	  p.creation_date as "fecha post",
+	  p.post_type as "tipo de post",
 	  p.url as "url post", p.shares as "comparticiones",
+	  p.comments_got  as "comentarios",
 	  p.total_reactions as "reacciones en total",
 	  p.react_like_got as "me gusta", p.react_love_got as "me encanta",
 	  p.react_haha_got as "me divierte", p.react_sad_got as "me entristece",
