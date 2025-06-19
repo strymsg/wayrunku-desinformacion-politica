@@ -126,7 +126,7 @@ async def get_text_from_all_elements(self, locator, *args):
 
 
 async def get_text_from_page_and_locator(p, locator: str, throw_exception=True,
-                                         timeout=1850):
+                                         timeout=1500):
     """Returns the `inner_text' from the element find with the given locator
 
     Parameters:

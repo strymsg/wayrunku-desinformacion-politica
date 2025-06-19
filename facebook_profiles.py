@@ -21,9 +21,10 @@ LOGGER = CustomLogger('fb_profiles 🏃')
 
 # TODO: parametrize these vars
 MAX_POST_AGE = 8
-# MAX_POST_AGE = 156
-# MAX_POSTS = 450
-MAX_POSTS = 30
+#MAX_POST_AGE = 135
+#MAX_POSTS = 250
+MAX_POSTS = 100
+MAX_FAIL_POSTS = 100
 
 # ========== DB Connection and session ==========
 db = DbManager.create()
@@ -113,8 +114,9 @@ async def scrape_profiles(from_folder, profiles, login):
     else:
         LOGGER.info("Using previous session avoiding to login.")
     
-    facebook_profile_scraper = FacebookProfileScraper(max_days_age=MAX_POST_AGE,
-                                                      max_posts=MAX_POSTS, max_fails=10)
+    facebook_profile_scraper = FacebookProfileScraper(
+        max_days_age=MAX_POST_AGE, max_posts=MAX_POSTS,
+        max_fails=MAX_FAIL_POSTS)
     
     profiles_dh = ProfilesDatahandler(session)
     posts_dh = PostsDataHandler(session)

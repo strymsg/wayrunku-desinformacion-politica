@@ -17,3 +17,6 @@ data/
 
 # browser state
 fb_browser_state.json
+
+# local files
+*.local.py

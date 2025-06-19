@@ -125,37 +125,37 @@ locators = {
         'react-like-count': {
             # me gusta
             'stype': 'xpath',
-            'value': "//div[@class='x1ey2m1c x9f619 xds687c x17qophe x10l6tqk x13vifvy']//div[contains(@aria-label,'Me gusta')]"
+            'value': "//div[@role='tab'][contains(@aria-label, 'con Me gusta')]"
         },
         'react-love-count': {
             # me encanta
             'stype': 'xpath',
-            'value': "//div[@class='x1ey2m1c x9f619 xds687c x17qophe x10l6tqk x13vifvy']//div[contains(@aria-label,'Me encanta')]"
+            'value': "//div[@role='tab'][contains(@aria-label, 'con Me encanta')]"
         },
         'react-icare-count': {
             # me importa
             'stype': 'xpath',
-            'value': "//div[@class='x1ey2m1c x9f619 xds687c x17qophe x10l6tqk x13vifvy']//div[contains(@aria-label, 'Me importa')]"
+            'value': "//div[@role='tab'][contains(@aria-label, 'con Me importa')]"
         },
         'react-sad-count': {
             # me entristece
             'stype': 'xpath',
-            'value': "//div[@class='x1ey2m1c x9f619 xds687c x17qophe x10l6tqk x13vifvy']//div[contains(@aria-label,'Me entristece')]"
+            'value': "//div[@role='tab'][contains(@aria-label, 'con Me entristece')]"
         },
         'react-wow-count': {
             # me asombra
             'stype': 'xpath',
-            'value': "//div[@class='x1ey2m1c x9f619 xds687c x17qophe x10l6tqk x13vifvy']//div[contains(@aria-label,'Me asombra')]"
+            'value': "//div[@role='tab'][contains(@aria-label, 'con Me asombra')]"
         },
         'react-angry-count': {
             # me enoja
             'stype': 'xpath',
-            'value': "//div[@class='x1ey2m1c x9f619 xds687c x17qophe x10l6tqk x13vifvy']//div[contains(@aria-label,'Me enoja')]"
+            'value': "//div[@role='tab'][contains(@aria-label, 'con Me enoja')]"
         },
         'react-haha-count': {
             # me divierte
             'stype': 'xpath',
-            'value': '//div[@class="x1ey2m1c x9f619 xds687c x17qophe x10l6tqk x13vifvy"]//div[contains(@aria-label,"Me divierte")]'
+            'value': "//div[@role='tab'][contains(@aria-label, 'con Me divierte')]"
         },
         'react-modal-close': {
             'stype': 'css',
@@ -245,7 +245,7 @@ locators = {
 
             # Revisar lo anterior ^^^ por alguna razon el locator no funciona usando desde playwright, pero en los navegadores directamente si.
 
-            'value': lambda post_locator: f'{post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//div[@class="xsxvzsj x1m3v4wt x17qophe x10l6tqk x13vifvy xjl7whj"]//span[text()="Reels"]/span[@class="html-span xdj266r x14z9mp xat24cr x1lziwak xexx8yu xyri2b x18d9i69 x1c1uobl x1hl2dhg x16tdsg8 x1vvkbs x4k7w5x x1h91t0o x1h9r5lt x1jfb8zj xv2umb2 x1beo9mf xaigb6o x12ejxvf x3igimt xarpa2k xedcshv x1lytzrv x1t2pt76 x7ja8zs x1qrby5j x1mshkth"]'
+            'value': lambda post_locator: f'({post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="html-span xdj266r x14z9mp xat24cr x1lziwak xexx8yu xyri2b x18d9i69 x1c1uobl x1hl2dhg x16tdsg8 x1vvkbs x4k7w5x x1h91t0o x1h9r5lt x1jfb8zj xv2umb2 x1beo9mf xaigb6o x12ejxvf x3igimt xarpa2k xedcshv x1lytzrv x1t2pt76 x7ja8zs x1qrby5j x1mshkth"])[1]'
         },
         'post-reel-reactions-to-content-locator': {
             # Construir obteniendo el quinto elemento, ejemplo:
@@ -253,13 +253,13 @@ locators = {
             'stype': 'xpath',
             #'value': lambda post_locator: f'({post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[5]'
             #'value': lambda post_locator: f'{post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//div[@aria-label="Me gusta"]/../..//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"]',
-            'value': lambda post_locator: f'{post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//div[@aria-label="Me gusta"]/../..//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft x1j85h84"]'
+            'value': lambda post_locator: f'{post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//div[@aria-label="Me gusta"]/../..//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"]'
         },
         'post-reel-comments-to-content-locator': {
             # Construir obteniendo el quinto elemento, ejemplo:
             # (//*[@id='«re»']//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[6]
             'stype': 'xpath',
-            'value': lambda post_locator: f'{post_locator}//div[@aria-label="Comentar"]/../..//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft x1j85h84"]'
+            'value': lambda post_locator: f'{post_locator}//div[@aria-label="Comentar"]/../..//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"]'
             #'value': lambda post_locator: f'({post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[6]'
         },
         'post-reel-shares-to-content-locator': {
@@ -267,7 +267,7 @@ locators = {
             # (//*[@id='«re»']//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[7]
             'stype': 'xpath',
             #'value': lambda post_locator: f'({post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[7]'
-            'value': lambda post_locator: f'{post_locator}//div[@aria-label="Compartir"]/../..//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft x1j85h84"]'
+            'value': lambda post_locator: f'{post_locator}//div[@aria-label="Compartir"]/../..//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"]'
         },
     }
 }

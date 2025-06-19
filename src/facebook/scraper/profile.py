@@ -34,14 +34,14 @@ class FacebookProfileScraper:
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
             max_days_age=7,
             max_posts=30,
-            max_fails=10
+            max_fails=50
     ):
         self.width = width
         self.height = height
         self.user_agent = user_agent
         self.max_days_age= max_days_age
         self.max_posts=max_posts
-        self.max_fails=10
+        self.max_fails=max_fails
         self.page = None
         self.visited_posts = []
 
@@ -482,7 +482,6 @@ class FacebookProfileScraper:
                         ).click()
                     except Exception as e:
                         LOGGER.debug('Error clicking to close react count.')
-                        
             
         elif post_data['post_type'] == 'reel':
             ## Reels
