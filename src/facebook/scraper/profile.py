@@ -486,14 +486,14 @@ class FacebookProfileScraper:
         elif post_data['post_type'] == 'reel':
             ## Reels
 
-            LOGGER.debug('Getting: url')
+            LOGGER.debug('Gettingv reel: url')
             _locator = get_locator(
                 locators['posts']['post-reel-url-rel-to-content-locator'], post_locator)
             print(f' url locator:| {_locator}   |')
             post_data['url'] = await self.page.locator(_locator).get_attribute('href')
             print(f' >> {post_data["url"]}')
             
-            LOGGER.debug('Getting: content')
+            LOGGER.debug('Getting reel: content')
             _locator = get_locator(
                 locators['posts']['post-reel-content-rel-to-content-locator'],
                 post_locator)
@@ -501,18 +501,18 @@ class FacebookProfileScraper:
                 self.page, {'stype': 'xpath', 'value': f'{_locator.split("xpath=")[1]}'},
                 throw_exception=False)
 
-            LOGGER.debug('Getting: reactions')
+            LOGGER.debug('Getting reel: reactions')
             _locator = get_locator(
                 locators['posts']['post-reel-reactions-to-content-locator'],
                 post_locator)
-            await scroll_until_element_found(self.page, _locator, throw_exception=False)
+            # await scroll_until_element_found(self.page, _locator, throw_exception=False)
             _locator = _locator.split('xpath=')[1]
             post_data['react_like_got'] = await get_text_from_page_and_locator(
                 self.page, { 'stype': 'xpath', 'value': _locator }, throw_exception=False)
             post_data['react_like_got'] = get_number_facebook(post_data['react_like_got'])
             post_data['total_reactions'] = post_data['react_like_got']
 
-            LOGGER.debug('Getting: comments')
+            LOGGER.debug('Getting reel: comments')
             _locator = get_locator(
                 locators['posts']['post-reel-comments-to-content-locator'],
                 post_locator)

@@ -29,8 +29,8 @@ engine = db.engine
 
 DESTINY_FOLDER='./data/reports/'
 
-SNAPSHOT_DATE_FROM = '2025-07-01'
-SNAPSHOT_DATE_TO = '2025-07-02'
+SNAPSHOT_DATE_FROM = '2025-07-07'
+SNAPSHOT_DATE_TO = '2025-07-08'
 
 @click.command()
 @click.option(

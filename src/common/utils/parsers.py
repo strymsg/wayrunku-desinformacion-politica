@@ -138,7 +138,7 @@ def facebook_date_text_parser(date_str) -> str:
         'junio': 'June',
         'jun': 'June', # bug?
         'julio': 'July',
-        'jul': 'June', # bug?
+        'jul': 'July', # bug?
         'agosto': 'August',
         'ago': 'August', # bug?
         'septiembre': 'September',
