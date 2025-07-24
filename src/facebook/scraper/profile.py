@@ -115,6 +115,10 @@ class FacebookProfileScraper:
             self.page, locators['figure-profiles']['creation-date'], throw_exception=False
         )
         profile_data['creation_date'] = facebook_date_text_parser(text) if text != '' else ''
+        if profile_data['creation_date'] == '':
+            # TODO: Adjust DB for this case
+            profile_data = '01-01-2001' # A mark to say "No date found"
+
         await self.page.locator(
             get_locator(locators['profiles']['about-tab-by-name'], 'Publicaciones')
         ).click()

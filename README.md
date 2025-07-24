@@ -2,6 +2,8 @@
 
 La idea es poder extraer datos de plataformas digitales y acumularlos en una base de datos. Plataformas soportadas: tiktok, facebook.
 
+- Los reportes de extracción en [data/reports/](data/reports/). [Detalles de reportes](#reportes-desde-la-BD)
+
 ## Instalación
 
 Se puede hacer con `pipenv`.
@@ -52,6 +54,13 @@ python facebook_profiles.py
 ```bash
 python reports.py
 ```
+
+Los reportes se guardan en `.csv` en [data/reports/](data/reports/) en dos carpetas:
+
+- `summaries`: que tienen un archivo con un reporte acumulado de todos los perfiles y un archivo con el reporte acumulado semanal.
+- `individuals`:
+  - `acumulados`: tiene una carpeta por cada perfil de usuario con un reporte acumulado con cada post.
+  - Las demás carpetas son una por cada perfil de usuario con el reporte semanal de cada post.
 
 ## Licencia
 
