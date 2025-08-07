@@ -243,7 +243,7 @@ locators = {
             'stype': 'xpath',
             # Revisar lo anterior ^^^ por alguna razon el locator no funciona usando desde playwright, pero en los navegadores directamente si.
 
-            'value': lambda post_locator: f'({post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="html-span xdj266r x14z9mp xat24cr x1lziwak xexx8yu xyri2b x18d9i69 x1c1uobl x1hl2dhg x16tdsg8 x1vvkbs x4k7w5x x1h91t0o x1h9r5lt x1jfb8zj xv2umb2 x1beo9mf xaigb6o x12ejxvf x3igimt xarpa2k xedcshv x1t2pt76 x7ja8zs x1qrby5j"])[1]'
+            'value': lambda post_locator: f'({post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="html-span xdj266r x14z9mp xat24cr x1lziwak xexx8yu xyri2b x18d9i69 x1c1uobl x1hl2dhg x16tdsg8 x1vvkbs x4k7w5x x1h91t0o x1h9r5lt x1jfb8zj xv2umb2 x1beo9mf xaigb6o x12ejxvf x3igimt xarpa2k xedcshv x1lytzrv x1t2pt76 x7ja8zs x1qrby5j"])[1]'
         },
         'post-reel-reactions-to-content-locator': {
             # Construir obteniendo el quinto elemento, ejemplo:
@@ -265,7 +265,7 @@ locators = {
             # (//*[@id='«re»']//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[7]
             'stype': 'xpath',
             #'value': lambda post_locator: f'({post_locator}//a[@aria-label="Abrir reel en el visor de Reels"]//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft"])[7]'
-            'value': lambda post_locator: f'{post_locator}//div[@aria-label="Compartir"]/../..//span[@class="x193iq5w xeuugli x13faqbe x1vvkbs x1xmvt09 x1lliihq x1s928wv xhkezso x1gmr53x x1cpjm7i x1fgarty x1943h6x x4zkp8e x3x7a5m x1nxh6w3 x1sibtaa x1s688f x17z8epw"]'
+            'value': lambda post_locator: f'{post_locator}//div[@aria-label="Compartir"]/../..//span[@class="x1lliihq x6ikm8r x10wlt62 x1n2onr6 xlyipyv xuxw1ft x1j85h84"]'
         },
     }
 }
